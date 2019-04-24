@@ -7,7 +7,7 @@ E.g.
 	11101000 -> 11100000
 */
 func RemoveRightmost1(x uint64) uint64 {
-	panic("not implemented")
+	return x & (x - 1)
 }
 
 /*
@@ -17,7 +17,7 @@ E.g.
 	11101000 -> 00001000
 */
 func ExtractRightmost1(x uint64) uint64 {
-	panic("not implemented")
+	return x & -x
 }
 
 /*
@@ -27,5 +27,5 @@ E.g.
 	11101000 -> 00001111
 */
 func SmearRightmost1(x uint64) uint64 {
-	panic("not implemented")
+	return x ^ (x - 1)
 }
