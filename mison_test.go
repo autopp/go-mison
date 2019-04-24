@@ -29,7 +29,7 @@ func bitsSliceToUint32(slice []string) []uint32 {
 	return ret
 }
 
-func Uint32ToBits(x uint32) string {
+func uint32ToBits(x uint32) string {
 	bits := make([]byte, 32)
 	for i := 31; i >= 0; i-- {
 		if x&1 == 1 {
@@ -43,10 +43,10 @@ func Uint32ToBits(x uint32) string {
 	return string(bits)
 }
 
-func Uint32SliceToBits(slice []uint32) []string {
+func uint32SliceToBits(slice []uint32) []string {
 	ret := make([]string, len(slice))
 	for i, x := range slice {
-		ret[i] = Uint32ToBits(x)
+		ret[i] = uint32ToBits(x)
 	}
 
 	return ret
@@ -129,7 +129,7 @@ func TestBuildCharacterBitmap(t *testing.T) {
 				expected[i] = bitsToUint32(bits)
 			}
 			actual := buildCharacterBitmap(tt.input, tt.ch)
-			msg := fmt.Sprintf("%s != %s", Uint32SliceToBits(actual), tt.expectedBits)
+			msg := fmt.Sprintf("%s != %s", uint32SliceToBits(actual), tt.expectedBits)
 			assert.Equal(t, expected, actual, msg)
 		})
 	}
