@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func bitsToUint64(bits string) uint64 {
-	var ret uint64
+func bitsToUint32(bits string) uint32 {
+	var ret uint32
 	n := len(bits)
 	for i := 0; i < n; i++ {
 		ret <<= 1
@@ -33,7 +33,7 @@ func TestRemoveRightmost1(t *testing.T) {
 	for _, tt := range cases {
 		title := fmt.Sprintf("input: %s, expected: %s", tt.bits, tt.expected)
 		t.Run(title, func(t *testing.T) {
-			assert.Equal(t, bitsToUint64(tt.expected), RemoveRightmost1(bitsToUint64(tt.bits)))
+			assert.Equal(t, bitsToUint32(tt.expected), RemoveRightmost1(bitsToUint32(tt.bits)))
 		})
 	}
 }
@@ -51,7 +51,7 @@ func TestExtractRightmost1(t *testing.T) {
 	for _, tt := range cases {
 		title := fmt.Sprintf("input: %s, expected: %s", tt.bits, tt.expected)
 		t.Run(title, func(t *testing.T) {
-			assert.Equal(t, bitsToUint64(tt.expected), ExtractRightmost1(bitsToUint64(tt.bits)))
+			assert.Equal(t, bitsToUint32(tt.expected), ExtractRightmost1(bitsToUint32(tt.bits)))
 		})
 	}
 }
@@ -69,7 +69,7 @@ func TestSmearRightmost1(t *testing.T) {
 	for _, tt := range cases {
 		title := fmt.Sprintf("input: %s, expected: %s", tt.bits, tt.expected)
 		t.Run(title, func(t *testing.T) {
-			assert.Equal(t, bitsToUint64(tt.expected), SmearRightmost1(bitsToUint64(tt.bits)))
+			assert.Equal(t, bitsToUint32(tt.expected), SmearRightmost1(bitsToUint32(tt.bits)))
 		})
 	}
 }
