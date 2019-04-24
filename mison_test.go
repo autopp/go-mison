@@ -30,17 +30,7 @@ func bitsSliceToUint32(slice []string) []uint32 {
 }
 
 func uint32ToBits(x uint32) string {
-	bits := make([]byte, 32)
-	for i := 31; i >= 0; i-- {
-		if x&1 == 1 {
-			bits[i] = '1'
-		} else {
-			bits[i] = '0'
-		}
-		x >>= 1
-	}
-
-	return string(bits)
+	return fmt.Sprintf("%032b", x)
 }
 
 func uint32SliceToBits(slice []uint32) []string {
