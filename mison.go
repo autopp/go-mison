@@ -29,3 +29,26 @@ E.g.
 func SmearRightmost1(x uint32) uint32 {
 	return x ^ (x - 1)
 }
+
+/*
+BuildCharacterBitmap builds bitmap for specified character
+*/
+func BuildCharacterBitmap(text string, ch byte) []uint32 {
+	jsonBytes := []byte(text)
+	bitmap := make([]uint32, (len(jsonBytes)+31)/32)
+	for i := range bitmap {
+		sublen := len(jsonBytes) - i*32
+		if sublen > 32 {
+			sublen = 32
+		}
+		for _, x := range jsonBytes[i*32 : i*32+sublen] {
+			bitmap[i] >>= 1
+			if x == ch {
+				bitmap[i] |= 1 << 31
+			}
+		}
+
+		bitmap[i] >>= uint(32 - sublen)
+	}
+	return bitmap
+}
