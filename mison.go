@@ -33,15 +33,14 @@ func smearRightmost1(x uint32) uint32 {
 /*
 buildCharacterBitmap builds bitmap for specified character
 */
-func buildCharacterBitmap(text string, ch byte) []uint32 {
-	jsonBytes := []byte(text)
-	bitmap := make([]uint32, (len(jsonBytes)+31)/32)
+func buildCharacterBitmap(text []byte, ch byte) []uint32 {
+	bitmap := make([]uint32, (len(text)+31)/32)
 	for i := range bitmap {
-		sublen := len(jsonBytes) - i*32
+		sublen := len(text) - i*32
 		if sublen > 32 {
 			sublen = 32
 		}
-		for _, x := range jsonBytes[i*32 : i*32+sublen] {
+		for _, x := range text[i*32 : i*32+sublen] {
 			bitmap[i] >>= 1
 			if x == ch {
 				bitmap[i] |= 1 << 31
@@ -70,11 +69,12 @@ buildStructualCharacterBitmaps build structual character bitmaps
 See section 4.2.1. (currently, SIMD is not used)
 */
 func buildStructualCharacterBitmaps(text string) *structualCharacterBitmaps {
+	jsonBytes := []byte(text)
 	return &structualCharacterBitmaps{
-		backslashes:  buildCharacterBitmap(text, '\\'),
-		doubleQuotes: buildCharacterBitmap(text, '"'),
-		colons:       buildCharacterBitmap(text, ':'),
-		lBraces:      buildCharacterBitmap(text, '{'),
-		rBraces:      buildCharacterBitmap(text, '}'),
+		backslashes:  buildCharacterBitmap(jsonBytes, '\\'),
+		doubleQuotes: buildCharacterBitmap(jsonBytes, '"'),
+		colons:       buildCharacterBitmap(jsonBytes, ':'),
+		lBraces:      buildCharacterBitmap(jsonBytes, '{'),
+		rBraces:      buildCharacterBitmap(jsonBytes, '}'),
 	}
 }

@@ -125,7 +125,7 @@ func TestBuildCharacterBitmap(t *testing.T) {
 		title := fmt.Sprintf("%s, %c", tt.input, tt.ch)
 		t.Run(title, func(t *testing.T) {
 			expected := bitsSliceToUint32(tt.expectedBits)
-			actual := buildCharacterBitmap(tt.input, tt.ch)
+			actual := buildCharacterBitmap([]byte(tt.input), tt.ch)
 			msg := fmt.Sprintf("%s != %s", uint32SliceToBits(actual), tt.expectedBits)
 			assert.Equal(t, expected, actual, msg)
 		})
