@@ -56,7 +56,7 @@ func TestRemoveRightmost1(t *testing.T) {
 	for _, tt := range cases {
 		title := fmt.Sprintf("input: %s, expected: %s", tt.bits, tt.expected)
 		t.Run(title, func(t *testing.T) {
-			assert.Equal(t, bitsToUint32(tt.expected), RemoveRightmost1(bitsToUint32(tt.bits)))
+			assert.Equal(t, bitsToUint32(tt.expected), removeRightmost1(bitsToUint32(tt.bits)))
 		})
 	}
 }
@@ -74,7 +74,7 @@ func TestExtractRightmost1(t *testing.T) {
 	for _, tt := range cases {
 		title := fmt.Sprintf("input: %s, expected: %s", tt.bits, tt.expected)
 		t.Run(title, func(t *testing.T) {
-			assert.Equal(t, bitsToUint32(tt.expected), ExtractRightmost1(bitsToUint32(tt.bits)))
+			assert.Equal(t, bitsToUint32(tt.expected), extractRightmost1(bitsToUint32(tt.bits)))
 		})
 	}
 }
@@ -92,7 +92,7 @@ func TestSmearRightmost1(t *testing.T) {
 	for _, tt := range cases {
 		title := fmt.Sprintf("input: %s, expected: %s", tt.bits, tt.expected)
 		t.Run(title, func(t *testing.T) {
-			assert.Equal(t, bitsToUint32(tt.expected), SmearRightmost1(bitsToUint32(tt.bits)))
+			assert.Equal(t, bitsToUint32(tt.expected), smearRightmost1(bitsToUint32(tt.bits)))
 		})
 	}
 }
@@ -119,7 +119,7 @@ func TestBuildCharacterBitmap(t *testing.T) {
 			for i, bits := range tt.expectedBits {
 				expected[i] = bitsToUint32(bits)
 			}
-			actual := BuildCharacterBitmap(tt.input, tt.ch)
+			actual := buildCharacterBitmap(tt.input, tt.ch)
 			msg := fmt.Sprintf("%s != %s", Uint32SliceToBits(actual), tt.expectedBits)
 			assert.Equal(t, expected, actual, msg)
 		})
