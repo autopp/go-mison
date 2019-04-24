@@ -56,11 +56,11 @@ func buildCharacterBitmap(text []byte, ch byte) []uint32 {
 structualCharacterBitmaps represents set of bitmap for structual character
 */
 type structualCharacterBitmaps struct {
-	backslashes  []uint32
-	doubleQuotes []uint32
-	colons       []uint32
-	lBraces      []uint32
-	rBraces      []uint32
+	backslashes []uint32
+	quotes      []uint32
+	colons      []uint32
+	lBraces     []uint32
+	rBraces     []uint32
 }
 
 /*
@@ -71,10 +71,10 @@ See section 4.2.1. (currently, SIMD is not used)
 func buildStructualCharacterBitmaps(text string) *structualCharacterBitmaps {
 	jsonBytes := []byte(text)
 	return &structualCharacterBitmaps{
-		backslashes:  buildCharacterBitmap(jsonBytes, '\\'),
-		doubleQuotes: buildCharacterBitmap(jsonBytes, '"'),
-		colons:       buildCharacterBitmap(jsonBytes, ':'),
-		lBraces:      buildCharacterBitmap(jsonBytes, '{'),
-		rBraces:      buildCharacterBitmap(jsonBytes, '}'),
+		backslashes: buildCharacterBitmap(jsonBytes, '\\'),
+		quotes:      buildCharacterBitmap(jsonBytes, '"'),
+		colons:      buildCharacterBitmap(jsonBytes, ':'),
+		lBraces:     buildCharacterBitmap(jsonBytes, '{'),
+		rBraces:     buildCharacterBitmap(jsonBytes, '}'),
 	}
 }
