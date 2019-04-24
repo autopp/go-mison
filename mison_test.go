@@ -20,6 +20,15 @@ func bitsToUint32(bits string) uint32 {
 	return ret
 }
 
+func bitsSliceToUint32(slice []string) []uint32 {
+	ret := make([]uint32, len(slice))
+	for i, bits := range slice {
+		ret[i] = bitsToUint32(bits)
+	}
+
+	return ret
+}
+
 func Uint32ToBits(x uint32) string {
 	bits := make([]byte, 32)
 	for i := 31; i >= 0; i-- {
@@ -122,6 +131,45 @@ func TestBuildCharacterBitmap(t *testing.T) {
 			actual := buildCharacterBitmap(tt.input, tt.ch)
 			msg := fmt.Sprintf("%s != %s", Uint32SliceToBits(actual), tt.expectedBits)
 			assert.Equal(t, expected, actual, msg)
+		})
+	}
+}
+
+type foo struct {
+	bar []int
+	baz []string
+}
+
+func TestBuildStructualCharacterBitmaps(t *testing.T) {
+	cases := []struct {
+		text            string
+		backSlashBits   []string
+		doubleQuoteBits []string
+		colonBits       []string
+		lBraceBits      []string
+		rBraceBits      []string
+	}{
+		{
+			text:            `{"id":"id:\"a\"","reviews":50,"a`,
+			backSlashBits:   []string{"00000000000000000010010000000000"},
+			doubleQuoteBits: []string{"01000010000000101100100001010010"},
+			colonBits:       []string{"00000100000000000000001000100000"},
+			lBraceBits:      []string{"00000000000000000000000000000001"},
+			rBraceBits:      []string{"00000000000000000000000000000000"}},
+	}
+
+	for _, tt := range cases {
+		title := fmt.Sprintf("input: %s", tt.text)
+		t.Run(title, func(t *testing.T) {
+			expected := &structualCharacterBitmaps{
+				backslashes:  bitsSliceToUint32(tt.backSlashBits),
+				doubleQuotes: bitsSliceToUint32(tt.doubleQuoteBits),
+				colons:       bitsSliceToUint32(tt.colonBits),
+				lBraces:      bitsSliceToUint32(tt.lBraceBits),
+				rBraces:      bitsSliceToUint32(tt.rBraceBits),
+			}
+
+			assert.Equal(t, expected, buildStructualCharacterBitmaps(tt.text))
 		})
 	}
 }
