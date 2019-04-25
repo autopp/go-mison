@@ -171,3 +171,11 @@ func TestBuildStructualQuoteBitmap(t *testing.T) {
 	actual := buildStructualQuoteBitmap(bitmaps)
 	assert.Equalf(t, expected, actual, "expected: %s, actual: %s", uint32SliceToBits(expected), uint32SliceToBits(actual))
 }
+
+func TestBuildStringMaskBitmap(t *testing.T) {
+	quoteBitmap := []uint32{bitsToUint32("01000010000000101000000001010010")}
+	expected := []uint32{bitsToUint32("10000011111111001111111110011100")}
+	actual := buildStringMaskBitmap(quoteBitmap)
+
+	assert.Equalf(t, expected, actual, "expected: %s, actual: %s", uint32SliceToBits(expected), uint32SliceToBits(actual))
+}

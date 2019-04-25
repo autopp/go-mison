@@ -130,3 +130,28 @@ func buildStructualQuoteBitmap(bitmaps *structualCharacterBitmaps) []uint32 {
 	}
 	return structualQuotes
 }
+
+/*
+buildStringMaskBitmap builds string mask bitmap
+*/
+func buildStringMaskBitmap(quoteBitmaps []uint32) []uint32 {
+	// return []uint32{}
+	bitmapLen := len(quoteBitmaps)
+	n := 0
+	stringBitmap := make([]uint32, bitmapLen)
+	for i := 0; i < bitmapLen; i++ {
+		quoteMask := quoteBitmaps[i]
+		var stringMask uint32
+		for quoteMask != 0 {
+			mask := smearRightmost1(quoteMask)
+			stringMask ^= mask
+			quoteMask = removeRightmost1(quoteMask)
+			n++
+		}
+		if n%2 == 1 {
+			stringMask = ^stringMask
+		}
+		stringBitmap[i] = stringMask
+	}
+	return stringBitmap
+}
