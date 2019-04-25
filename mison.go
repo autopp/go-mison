@@ -39,7 +39,7 @@ func popcnt(x uint32) int {
 }
 
 /*
-buildCharacterBitmap builds bitmap for specified character
+buildCharacterBitmap builds bitmap for specified character.
 */
 func buildCharacterBitmap(text []byte, ch byte) []uint32 {
 	bitmap := make([]uint32, (len(text)+31)/32)
@@ -61,7 +61,7 @@ func buildCharacterBitmap(text []byte, ch byte) []uint32 {
 }
 
 /*
-structualCharacterBitmaps represents set of bitmap for structual character
+structualCharacterBitmaps represents set of bitmap for structual character.
 */
 type structualCharacterBitmaps struct {
 	backslashes []uint32
@@ -72,9 +72,9 @@ type structualCharacterBitmaps struct {
 }
 
 /*
-buildStructualCharacterBitmaps build structual character bitmaps
+buildStructualCharacterBitmaps builda structual character bitmaps.
 
-See section 4.2.1. (currently, SIMD is not used)
+See section 4.2.1 (currently, SIMD is not used).
 */
 func buildStructualCharacterBitmaps(text string) *structualCharacterBitmaps {
 	jsonBytes := []byte(text)
@@ -88,7 +88,7 @@ func buildStructualCharacterBitmaps(text string) *structualCharacterBitmaps {
 }
 
 /*
-buildStructualQuoteBitmaps builds structual quote bitmaps
+buildStructualQuoteBitmaps builds structual quote bitmaps.
 
 See section 4.2.2.
 */
@@ -139,7 +139,9 @@ func buildStructualQuoteBitmap(bitmaps *structualCharacterBitmaps) []uint32 {
 }
 
 /*
-buildStringMaskBitmap builds string mask bitmap
+buildStringMaskBitmap builds string mask bitmap.
+
+See section 4.2.3.
 */
 func buildStringMaskBitmap(quoteBitmaps []uint32) []uint32 {
 	// return []uint32{}
