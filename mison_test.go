@@ -162,14 +162,76 @@ func TestBuildStructualCharacterBitmaps(t *testing.T) {
 }
 
 func TestBuildStructualQuoteBitmap(t *testing.T) {
-	bitmaps := &structualCharacterBitmaps{
-		backslashes: []uint32{bitsToUint32("00000000000000000010010000000000")},
-		quotes:      []uint32{bitsToUint32("01000010000000101100100001010010")},
+	cases := []struct {
+		bitmaps  *structualCharacterBitmaps
+		expected []uint32
+	}{
+		{
+			bitmaps: &structualCharacterBitmaps{
+				backslashes: []uint32{bitsToUint32("00000000000000000010010000000000")},
+				quotes:      []uint32{bitsToUint32("01000010000000101100100001010010")},
+			},
+			expected: []uint32{bitsToUint32("01000010000000101000000001010010")},
+		},
+		{
+			bitmaps: &structualCharacterBitmaps{
+				backslashes: bitsSliceToUint32([]string{
+					"00000000000000000000000000000000",
+					"00000000000000000000000000000001",
+				}),
+				quotes: bitsSliceToUint32([]string{
+					"00000000000000000000000000000000",
+					"00000000000000000000000000000010",
+				}),
+			},
+			expected: bitsSliceToUint32([]string{
+				"00000000000000000000000000000000",
+				"00000000000000000000000000000000",
+			}),
+		},
+		{
+			bitmaps: &structualCharacterBitmaps{
+				backslashes: bitsSliceToUint32([]string{
+					"10000000000000000000000000000000",
+					"00000000000000000000000000000001",
+				}),
+				quotes: bitsSliceToUint32([]string{
+					"00000000000000000000000000000000",
+					"00000000000000000000000000000010",
+				}),
+			},
+			expected: bitsSliceToUint32([]string{
+				"00000000000000000000000000000000",
+				"00000000000000000000000000000010",
+			}),
+		},
+		{
+			bitmaps: &structualCharacterBitmaps{
+				backslashes: bitsSliceToUint32([]string{
+					"10000000000000000000000000000000",
+					"11111111111111111111111111111111",
+					"00000000000000000000000000000001",
+				}),
+				quotes: bitsSliceToUint32([]string{
+					"00000000000000000000000000000000",
+					"00000000000000000000000000000000",
+					"00000000000000000000000000000010",
+				}),
+			},
+			expected: bitsSliceToUint32([]string{
+				"00000000000000000000000000000000",
+				"00000000000000000000000000000000",
+				"00000000000000000000000000000010",
+			}),
+		},
 	}
 
-	expected := []uint32{bitsToUint32("01000010000000101000000001010010")}
-	actual := buildStructualQuoteBitmap(bitmaps)
-	assert.Equalf(t, expected, actual, "expected: %s, actual: %s", uint32SliceToBits(expected), uint32SliceToBits(actual))
+	for i, tt := range cases {
+		t.Run(fmt.Sprintf("case%d", i+1), func(t *testing.T) {
+			actual := buildStructualQuoteBitmap(tt.bitmaps)
+			assert.Equalf(t, tt.expected, actual, "expected: %s, actual: %s", uint32SliceToBits(tt.expected), uint32SliceToBits(actual))
+		})
+	}
 }
 
 func TestBuildStringMaskBitmap(t *testing.T) {

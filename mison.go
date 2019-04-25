@@ -111,14 +111,21 @@ func buildStructualQuoteBitmap(bitmaps *structualCharacterBitmaps) []uint32 {
 			numberOfOnes := popcnt(mask)
 			backslashOnLeft := (backslashes[i] & mask) << uint(32-numberOfOnes)
 			numberOfLeadingOnes := bits.LeadingZeros32(^backslashOnLeft)
-			if numberOfLeadingOnes != numberOfOnes {
-				if numberOfLeadingOnes&1 == 1 {
-					unstructualQuote = unstructualQuote | extractRightmost1(backsalashedQuote)
+			if numberOfLeadingOnes == numberOfOnes {
+				for j := i - 1; j >= 0; j-- {
+					numberOfLeadingOneInWord := bits.LeadingZeros32(^backslashes[j])
+					if numberOfLeadingOneInWord < 32 {
+						numberOfLeadingOnes += numberOfLeadingOneInWord
+						break
+					}
 				}
-				backsalashedQuote = removeRightmost1(backsalashedQuote)
-			} else {
-				panic("not implemented")
+			} else if numberOfLeadingOnes > numberOfOnes {
+				panic("illigal state about of bitmask")
 			}
+			if numberOfLeadingOnes&1 == 1 {
+				unstructualQuote = unstructualQuote | extractRightmost1(backsalashedQuote)
+			}
+			backsalashedQuote = removeRightmost1(backsalashedQuote)
 		}
 		unstructualQuotes[i] = ^unstructualQuote
 	}
