@@ -164,3 +164,7 @@ func buildStringMaskBitmap(quoteBitmaps []uint32) []uint32 {
 	}
 	return stringBitmap
 }
+
+func buildLeveledColonBitmaps(bitmaps structualCharacterBitmaps, stringMaskBitmap []uint32, level int) [][]uint32 {
+	return make([][]uint32, level)
+}

@@ -7,23 +7,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func bitsToUint32(bits string) uint32 {
-	var ret uint32
-	n := len(bits)
-	for i := 0; i < n; i++ {
-		ret <<= 1
-		if bits[i] == '1' {
-			ret |= 1
-		}
-	}
-
-	return ret
-}
-
-func bitsSliceToUint32(slice []string) []uint32 {
+func bitsToUint32(slice ...string) []uint32 {
 	ret := make([]uint32, len(slice))
 	for i, bits := range slice {
-		ret[i] = bitsToUint32(bits)
+		ret[i] = 0
+		n := len(bits)
+		for j := 0; j < n; j++ {
+			ret[i] <<= 1
+			if bits[j] == '1' {
+				ret[i] |= 1
+			}
+		}
 	}
 
 	return ret
@@ -55,7 +49,7 @@ func TestRemoveRightmost1(t *testing.T) {
 	for _, tt := range cases {
 		title := fmt.Sprintf("input: %s, expected: %s", tt.bits, tt.expected)
 		t.Run(title, func(t *testing.T) {
-			assert.Equal(t, bitsToUint32(tt.expected), removeRightmost1(bitsToUint32(tt.bits)))
+			assert.Equal(t, bitsToUint32(tt.expected)[0], removeRightmost1(bitsToUint32(tt.bits)[0]))
 		})
 	}
 }
@@ -73,7 +67,7 @@ func TestExtractRightmost1(t *testing.T) {
 	for _, tt := range cases {
 		title := fmt.Sprintf("input: %s, expected: %s", tt.bits, tt.expected)
 		t.Run(title, func(t *testing.T) {
-			assert.Equal(t, bitsToUint32(tt.expected), extractRightmost1(bitsToUint32(tt.bits)))
+			assert.Equal(t, bitsToUint32(tt.expected)[0], extractRightmost1(bitsToUint32(tt.bits)[0]))
 		})
 	}
 }
@@ -91,7 +85,7 @@ func TestSmearRightmost1(t *testing.T) {
 	for _, tt := range cases {
 		title := fmt.Sprintf("input: %s, expected: %s", tt.bits, tt.expected)
 		t.Run(title, func(t *testing.T) {
-			assert.Equal(t, bitsToUint32(tt.expected), smearRightmost1(bitsToUint32(tt.bits)))
+			assert.Equal(t, bitsToUint32(tt.expected)[0], smearRightmost1(bitsToUint32(tt.bits)[0]))
 		})
 	}
 }
@@ -114,7 +108,7 @@ func TestBuildCharacterBitmap(t *testing.T) {
 	for _, tt := range cases {
 		title := fmt.Sprintf("%s, %c", tt.input, tt.ch)
 		t.Run(title, func(t *testing.T) {
-			expected := bitsSliceToUint32(tt.expectedBits)
+			expected := bitsToUint32(tt.expectedBits...)
 			actual := buildCharacterBitmap([]byte(tt.input), tt.ch)
 			msg := fmt.Sprintf("%s != %s", uint32SliceToBits(actual), tt.expectedBits)
 			assert.Equal(t, expected, actual, msg)
@@ -149,11 +143,11 @@ func TestBuildStructualCharacterBitmaps(t *testing.T) {
 		title := fmt.Sprintf("input: %s", tt.text)
 		t.Run(title, func(t *testing.T) {
 			expected := &structualCharacterBitmaps{
-				backslashes: bitsSliceToUint32(tt.backSlashBits),
-				quotes:      bitsSliceToUint32(tt.quoteBits),
-				colons:      bitsSliceToUint32(tt.colonBits),
-				lBraces:     bitsSliceToUint32(tt.lBraceBits),
-				rBraces:     bitsSliceToUint32(tt.rBraceBits),
+				backslashes: bitsToUint32(tt.backSlashBits...),
+				quotes:      bitsToUint32(tt.quoteBits...),
+				colons:      bitsToUint32(tt.colonBits...),
+				lBraces:     bitsToUint32(tt.lBraceBits...),
+				rBraces:     bitsToUint32(tt.rBraceBits...),
 			}
 
 			assert.Equal(t, expected, buildStructualCharacterBitmaps(tt.text))
@@ -168,61 +162,61 @@ func TestBuildStructualQuoteBitmap(t *testing.T) {
 	}{
 		{
 			bitmaps: &structualCharacterBitmaps{
-				backslashes: []uint32{bitsToUint32("00000000000000000010010000000000")},
-				quotes:      []uint32{bitsToUint32("01000010000000101100100001010010")},
+				backslashes: bitsToUint32("00000000000000000010010000000000"),
+				quotes:      bitsToUint32("01000010000000101100100001010010"),
 			},
-			expected: []uint32{bitsToUint32("01000010000000101000000001010010")},
+			expected: bitsToUint32("01000010000000101000000001010010"),
 		},
 		{
 			bitmaps: &structualCharacterBitmaps{
-				backslashes: bitsSliceToUint32([]string{
+				backslashes: bitsToUint32(
 					"00000000000000000000000000000000",
 					"00000000000000000000000000000001",
-				}),
-				quotes: bitsSliceToUint32([]string{
+				),
+				quotes: bitsToUint32(
 					"00000000000000000000000000000000",
 					"00000000000000000000000000000010",
-				}),
+				),
 			},
-			expected: bitsSliceToUint32([]string{
+			expected: bitsToUint32(
 				"00000000000000000000000000000000",
 				"00000000000000000000000000000000",
-			}),
+			),
 		},
 		{
 			bitmaps: &structualCharacterBitmaps{
-				backslashes: bitsSliceToUint32([]string{
+				backslashes: bitsToUint32(
 					"10000000000000000000000000000000",
 					"00000000000000000000000000000001",
-				}),
-				quotes: bitsSliceToUint32([]string{
+				),
+				quotes: bitsToUint32(
 					"00000000000000000000000000000000",
 					"00000000000000000000000000000010",
-				}),
+				),
 			},
-			expected: bitsSliceToUint32([]string{
+			expected: bitsToUint32(
 				"00000000000000000000000000000000",
 				"00000000000000000000000000000010",
-			}),
+			),
 		},
 		{
 			bitmaps: &structualCharacterBitmaps{
-				backslashes: bitsSliceToUint32([]string{
+				backslashes: bitsToUint32(
 					"10000000000000000000000000000000",
 					"11111111111111111111111111111111",
 					"00000000000000000000000000000001",
-				}),
-				quotes: bitsSliceToUint32([]string{
+				),
+				quotes: bitsToUint32(
 					"00000000000000000000000000000000",
 					"00000000000000000000000000000000",
 					"00000000000000000000000000000010",
-				}),
+				),
 			},
-			expected: bitsSliceToUint32([]string{
+			expected: bitsToUint32(
 				"00000000000000000000000000000000",
 				"00000000000000000000000000000000",
 				"00000000000000000000000000000010",
-			}),
+			),
 		},
 	}
 
@@ -235,8 +229,8 @@ func TestBuildStructualQuoteBitmap(t *testing.T) {
 }
 
 func TestBuildStringMaskBitmap(t *testing.T) {
-	quoteBitmap := []uint32{bitsToUint32("01000010000000101000000001010010")}
-	expected := []uint32{bitsToUint32("10000011111111001111111110011100")}
+	quoteBitmap := bitsToUint32("01000010000000101000000001010010")
+	expected := bitsToUint32("10000011111111001111111110011100")
 	actual := buildStringMaskBitmap(quoteBitmap)
 
 	assert.Equalf(t, expected, actual, "expected: %s, actual: %s", uint32SliceToBits(expected), uint32SliceToBits(actual))
