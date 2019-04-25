@@ -160,3 +160,14 @@ func TestBuildStructualCharacterBitmaps(t *testing.T) {
 		})
 	}
 }
+
+func TestBuildStructualQuoteBitmap(t *testing.T) {
+	bitmaps := &structualCharacterBitmaps{
+		backslashes: []uint32{bitsToUint32("00000000000000000010010000000000")},
+		quotes:      []uint32{bitsToUint32("01000010000000101100100001010010")},
+	}
+
+	expected := []uint32{bitsToUint32("01000010000000101000000001010010")}
+	actual := buildStructualQuoteBitmap(bitmaps)
+	assert.Equalf(t, expected, actual, "expected: %s, actual: %s", uint32SliceToBits(expected), uint32SliceToBits(actual))
+}

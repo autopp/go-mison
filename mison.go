@@ -1,5 +1,9 @@
 package mison
 
+import (
+	"math/bits"
+)
+
 /*
 removeRightmost1 removes the rightmost 1 in x.
 
@@ -28,6 +32,10 @@ E.g.
 */
 func smearRightmost1(x uint32) uint32 {
 	return x ^ (x - 1)
+}
+
+func popcnt(x uint32) int {
+	return bits.OnesCount32(x)
 }
 
 /*
@@ -77,4 +85,48 @@ func buildStructualCharacterBitmaps(text string) *structualCharacterBitmaps {
 		lBraces:     buildCharacterBitmap(jsonBytes, '{'),
 		rBraces:     buildCharacterBitmap(jsonBytes, '}'),
 	}
+}
+
+/*
+buildStructualQuoteBitmaps builds structual quote bitmaps
+
+See section 4.2.2.
+*/
+func buildStructualQuoteBitmap(bitmaps *structualCharacterBitmaps) []uint32 {
+	backslashes := bitmaps.backslashes
+	quotes := bitmaps.quotes
+	bitmapLen := len(backslashes)
+	backsalashedQuotes := make([]uint32, bitmapLen)
+	for i := 0; i < bitmapLen-1; i++ {
+		backsalashedQuotes[i] = ((quotes[i] >> 1) | (quotes[i+1] << 31)) & backslashes[i]
+	}
+	backsalashedQuotes[bitmapLen-1] = (quotes[bitmapLen-1] >> 1) & backslashes[bitmapLen-1]
+
+	unstructualQuotes := make([]uint32, bitmapLen)
+	for i := 0; i < bitmapLen; i++ {
+		var unstructualQuote uint32
+		backsalashedQuote := backsalashedQuotes[i]
+		for backsalashedQuote != 0 {
+			mask := smearRightmost1(backsalashedQuote)
+			numberOfOnes := popcnt(mask)
+			backslashOnLeft := (backslashes[i] & mask) << uint(32-numberOfOnes)
+			numberOfLeadingOnes := bits.LeadingZeros32(^backslashOnLeft)
+			if numberOfLeadingOnes != numberOfOnes {
+				if numberOfLeadingOnes&1 == 1 {
+					unstructualQuote = unstructualQuote | extractRightmost1(backsalashedQuote)
+				}
+				backsalashedQuote = removeRightmost1(backsalashedQuote)
+			} else {
+				panic("not implemented")
+			}
+		}
+		unstructualQuotes[i] = ^unstructualQuote
+	}
+
+	structualQuotes := make([]uint32, bitmapLen)
+	structualQuotes[0] = quotes[0] & (unstructualQuotes[0] << 1)
+	for i := 1; i < bitmapLen; i++ {
+		structualQuotes[i] = quotes[i] & ((unstructualQuotes[i] << 1) | (unstructualQuotes[i-1] >> 31))
+	}
+	return structualQuotes
 }
