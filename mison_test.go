@@ -235,3 +235,91 @@ func TestBuildStringMaskBitmap(t *testing.T) {
 
 	assert.Equalf(t, expected, actual, "expected: %s, actual: %s", uint32SliceToBits(expected), uint32SliceToBits(actual))
 }
+func TestBuildLeveledColonBitmaps(t *testing.T) {
+	cases := []struct {
+		bitmaps    *structualCharacterBitmaps
+		stringMask []uint32
+		level      int
+		expected   [][]uint32
+	}{
+		{
+			// {"a":1,"b":{"c":2}}
+			// {{2:"c"}:"b",1:"a"}
+			bitmaps: &structualCharacterBitmaps{
+				colons: bitsToUint32(
+					"00000000000000001000010000010000",
+				),
+				lBraces: bitsToUint32("00000000000000000000100000000001"),
+				rBraces: bitsToUint32("00000000000001100000000000000000"),
+			},
+			stringMask: bitsToUint32("00000000000000000110001100001100"),
+			level:      2,
+			expected: [][]uint32{
+				bitsToUint32("00000000000000000000010000010000"),
+				bitsToUint32("00000000000000001000010000010000"),
+			},
+		},
+		{
+			// {"a":1,"b":{"c":{"d":2},"e":3}}
+			// }}3:"e",}2:"d"{:"c"{:"b",1:"a"{
+			bitmaps: &structualCharacterBitmaps{
+				colons:  bitsToUint32("00001000000100001000010000010000"),
+				lBraces: bitsToUint32("00000000000000010000100000000001"),
+				rBraces: bitsToUint32("01100000010000000000000000000000"),
+			},
+			stringMask: bitsToUint32("00000110000011000110001100001100"),
+			level:      3,
+			expected: [][]uint32{
+				bitsToUint32("00000000000000000000010000010000"),
+				bitsToUint32("00001000000000001000010000010000"),
+				bitsToUint32("00001000000100001000010000010000"),
+			},
+		},
+		{
+			//                       {"a":1,"b"
+			// :{"c":{"d":2},"e":3}}
+			// "b",1:"a"{
+			//            }}3:"e",}2:"d"{:"c"{:
+			bitmaps: &structualCharacterBitmaps{
+				colons: bitsToUint32(
+					"00000100000000000000000000000000",
+					"00000000000000100000010000100001",
+				),
+				lBraces: bitsToUint32(
+					"00000000010000000000000000000000",
+					"00000000000000000000000001000010",
+				),
+				rBraces: bitsToUint32(
+					"00000000000000000000000000000000",
+					"00000000000110000001000000000000",
+				),
+			},
+			stringMask: bitsToUint32(
+				"11000011000000000000000000000000",
+				"00000000000000011000001100011000",
+			),
+			level: 3,
+			expected: [][]uint32{
+				bitsToUint32(
+					"00000100000000000000000000000000",
+					"00000000000000000000000000000001",
+				),
+				bitsToUint32(
+					"00000100000000000000000000000000",
+					"00000000000000100000000000100001",
+				),
+				bitsToUint32(
+					"00000100000000000000000000000000",
+					"00000000000000100000010000100001",
+				),
+			},
+		},
+	}
+
+	for i, tt := range cases {
+		t.Run(fmt.Sprintf("case%d", i+1), func(t *testing.T) {
+			actual := buildLeveledColonBitmaps(tt.bitmaps, tt.stringMask, tt.level)
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}

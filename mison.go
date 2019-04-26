@@ -165,6 +165,97 @@ func buildStringMaskBitmap(quoteBitmaps []uint32) []uint32 {
 	return stringBitmap
 }
 
-func buildLeveledColonBitmaps(bitmaps structualCharacterBitmaps, stringMaskBitmap []uint32, level int) [][]uint32 {
-	return make([][]uint32, level)
+type maskStack struct {
+	body []struct {
+		index int
+		mask  uint32
+	}
+	sp int
+}
+
+const stackInitialSize = 32
+
+func newMaskStack() *maskStack {
+	return &maskStack{
+		body: make([]struct {
+			index int
+			mask  uint32
+		}, stackInitialSize),
+		sp: 0,
+	}
+}
+
+func (s *maskStack) push(index int, mask uint32) {
+	if s.sp == len(s.body) {
+		panic("stack overflow")
+	}
+
+	s.body[s.sp].index = index
+	s.body[s.sp].mask = mask
+	s.sp++
+}
+
+func (s *maskStack) pop() (int, uint32) {
+	if s.sp == 0 {
+		panic("attempt pop from empty stack")
+	}
+
+	s.sp--
+	return s.body[s.sp].index, s.body[s.sp].mask
+}
+
+func buildLeveledColonBitmaps(bitmaps *structualCharacterBitmaps, stringMaskBitmap []uint32, level int) [][]uint32 {
+	bitmapLen := len(stringMaskBitmap)
+	colons := bitmaps.colons
+	lBraces := bitmaps.lBraces
+	rBraces := bitmaps.rBraces
+
+	// make colons, lBraces, rBraces to be structual
+	for i := 0; i < bitmapLen; i++ {
+		stringMask := ^stringMaskBitmap[i]
+		colons[i] &= stringMask
+		lBraces[i] &= stringMask
+		rBraces[i] &= stringMask
+	}
+
+	colonBitmaps := make([][]uint32, level)
+	for i := 0; i < level; i++ {
+		colonBitmaps[i] = make([]uint32, bitmapLen)
+		copy(colonBitmaps[i], colons)
+	}
+	stack := newMaskStack()
+
+	for i := 0; i < bitmapLen; i++ {
+		mLeft := lBraces[i]
+		mRight := rBraces[i]
+		for {
+			mLeftBit := extractRightmost1(mLeft)
+			mRightBit := extractRightmost1(mRight)
+			for mLeftBit != 0 && (mRightBit == 0 || mLeftBit < mRightBit) {
+				stack.push(i, mLeftBit)
+				mLeft = removeRightmost1(mLeft)
+				mLeftBit = extractRightmost1(mLeft)
+			}
+			if mRightBit != 0 {
+				var j int
+				j, mLeftBit = stack.pop()
+				if stack.sp > 0 && stack.sp <= level {
+					if i == j {
+						colonBitmaps[stack.sp-1][i] &= ^(mRightBit - mLeftBit)
+					} else {
+						colonBitmaps[stack.sp-1][j] &= mLeftBit - 1
+						colonBitmaps[stack.sp-1][i] &= ^(mRightBit - 1)
+						for k := j + 1; k < i; k++ {
+							colonBitmaps[stack.sp][k] = 0
+						}
+					}
+				}
+			} else {
+				break
+			}
+			mRight = removeRightmost1(mRight)
+		}
+	}
+
+	return colonBitmaps
 }
