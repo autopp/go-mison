@@ -229,12 +229,34 @@ func TestBuildStructualQuoteBitmap(t *testing.T) {
 }
 
 func TestBuildStringMaskBitmap(t *testing.T) {
-	quoteBitmap := bitsToUint32("01000010000000101000000001010010")
-	expected := bitsToUint32("10000011111111001111111110011100")
-	actual := buildStringMaskBitmap(quoteBitmap)
+	cases := []struct {
+		quoteBitmap []uint32
+		expected    []uint32
+	}{
+		{
+			quoteBitmap: bitsToUint32("01000010000000101000000001010010"),
+			expected:    bitsToUint32("10000011111111001111111110011100"),
+		},
+		{
+			quoteBitmap: bitsToUint32(
+				"00010100100000000000000000000000",
+				"00000000010100001000000010100000",
+			),
+			expected: bitsToUint32(
+				"11100111000000000000000000000000",
+				"00000000011000001111111100111111",
+			),
+		},
+	}
 
-	assert.Equalf(t, expected, actual, "expected: %s, actual: %s", uint32SliceToBits(expected), uint32SliceToBits(actual))
+	for i, tt := range cases {
+		t.Run(fmt.Sprintf("case%d", i+1), func(t *testing.T) {
+			actual := buildStringMaskBitmap(tt.quoteBitmap)
+			assert.Equalf(t, tt.expected, actual, "expected: %s, actual: %s", uint32SliceToBits(tt.expected), uint32SliceToBits(actual))
+		})
+	}
 }
+
 func TestBuildLeveledColonBitmaps(t *testing.T) {
 	cases := []struct {
 		bitmaps    *structualCharacterBitmaps
