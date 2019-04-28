@@ -1,6 +1,7 @@
 package mison
 
 import (
+	"errors"
 	"math/bits"
 )
 
@@ -185,26 +186,27 @@ func newMaskStack() *maskStack {
 	}
 }
 
-func (s *maskStack) push(index int, mask uint32) {
+func (s *maskStack) push(index int, mask uint32) error {
 	if s.sp == len(s.body) {
-		panic("stack overflow")
+		return errors.New("stack overflow")
 	}
 
 	s.body[s.sp].index = index
 	s.body[s.sp].mask = mask
 	s.sp++
+	return nil
 }
 
-func (s *maskStack) pop() (int, uint32) {
+func (s *maskStack) pop() (int, uint32, error) {
 	if s.sp == 0 {
-		panic("attempt pop from empty stack")
+		return 0, 0, errors.New("attempt pop from empty stack")
 	}
 
 	s.sp--
-	return s.body[s.sp].index, s.body[s.sp].mask
+	return s.body[s.sp].index, s.body[s.sp].mask, nil
 }
 
-func buildLeveledColonBitmaps(bitmaps *structualCharacterBitmaps, stringMaskBitmap []uint32, level int) [][]uint32 {
+func buildLeveledColonBitmaps(bitmaps *structualCharacterBitmaps, stringMaskBitmap []uint32, level int) ([][]uint32, error) {
 	bitmapLen := len(stringMaskBitmap)
 	colons := bitmaps.colons
 	lBraces := bitmaps.lBraces
@@ -238,7 +240,11 @@ func buildLeveledColonBitmaps(bitmaps *structualCharacterBitmaps, stringMaskBitm
 			}
 			if mRightBit != 0 {
 				var j int
-				j, mLeftBit = stack.pop()
+				var err error
+				j, mLeftBit, err = stack.pop()
+				if err != nil {
+					return nil, err
+				}
 				if stack.sp > 0 && stack.sp <= level {
 					if i == j {
 						colonBitmaps[stack.sp-1][i] &= ^(mRightBit - mLeftBit)
@@ -257,5 +263,5 @@ func buildLeveledColonBitmaps(bitmaps *structualCharacterBitmaps, stringMaskBitm
 		}
 	}
 
-	return colonBitmaps
+	return colonBitmaps, nil
 }

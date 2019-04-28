@@ -340,7 +340,8 @@ func TestBuildLeveledColonBitmaps(t *testing.T) {
 
 	for i, tt := range cases {
 		t.Run(fmt.Sprintf("case%d", i+1), func(t *testing.T) {
-			actual := buildLeveledColonBitmaps(tt.bitmaps, tt.stringMask, tt.level)
+			actual, err := buildLeveledColonBitmaps(tt.bitmaps, tt.stringMask, tt.level)
+			assert.Nil(t, err)
 			assert.Equal(t, tt.expected, actual)
 		})
 	}
