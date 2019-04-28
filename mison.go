@@ -2,6 +2,7 @@ package mison
 
 import (
 	"errors"
+	"fmt"
 	"math/bits"
 )
 
@@ -188,7 +189,7 @@ func newMaskStack() *maskStack {
 
 func (s *maskStack) push(index int, mask uint32) error {
 	if s.sp == len(s.body) {
-		return errors.New("stack overflow")
+		panic("stack overflow")
 	}
 
 	s.body[s.sp].index = index
@@ -243,7 +244,8 @@ func buildLeveledColonBitmaps(bitmaps *structualCharacterBitmaps, stringMaskBitm
 				var err error
 				j, mLeftBit, err = stack.pop()
 				if err != nil {
-					return nil, err
+					offset := bits.LeadingZeros32(mRightBit)
+					return nil, fmt.Errorf("unexpected right bracement is found at position %d", i*32+32-offset)
 				}
 				if stack.sp > 0 && stack.sp <= level {
 					if i == j {
