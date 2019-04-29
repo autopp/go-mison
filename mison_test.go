@@ -346,3 +346,45 @@ func TestBuildLeveledColonBitmaps(t *testing.T) {
 		})
 	}
 }
+
+func TestGenerateColonPositions(t *testing.T) {
+	cases := []struct {
+		index    [][]uint32
+		start    int
+		end      int
+		level    int
+		expected []int
+	}{
+		{
+			// {"a":1,"b":{"c":{"d":2},"e":3}}
+			// }}3:"e",}2:"d"{:"c"{:"b",1:"a"{
+			index: [][]uint32{
+				bitsToUint32("00000000000000000000010000010000"),
+				bitsToUint32("00001000000000001000010000010000"),
+				bitsToUint32("00001000000100001000010000010000"),
+			},
+			start:    0,
+			end:      31,
+			level:    0,
+			expected: []int{4, 10},
+		},
+		{
+			index: [][]uint32{
+				bitsToUint32("00000000000000000000010000010000"),
+				bitsToUint32("00001000000000001000010000010000"),
+				bitsToUint32("00001000000100001000010000010000"),
+			},
+			start:    11,
+			end:      30,
+			level:    1,
+			expected: []int{15, 27},
+		},
+	}
+
+	for i, tt := range cases {
+		t.Run(fmt.Sprintf("case%d", i+i), func(t *testing.T) {
+			actual := generateColonPositions(tt.index, tt.start, tt.end, tt.level)
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}

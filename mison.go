@@ -3,6 +3,7 @@ package mison
 import (
 	"errors"
 	"fmt"
+	"math"
 	"math/bits"
 )
 
@@ -266,4 +267,20 @@ func buildLeveledColonBitmaps(bitmaps *structualCharacterBitmaps, stringMaskBitm
 	}
 
 	return colonBitmaps, nil
+}
+
+func generateColonPositions(index [][]uint32, start, end, level int) []int {
+	colons := make([]int, 0)
+	for i := int(math.Floor(float64(start) / 32)); i <= int(math.Floor(float64(end)/32)); i++ {
+		mColon := index[level][i]
+		for mColon != 0 {
+			mBit := extractRightmost1(mColon)
+			offset := i*32 + popcnt(mBit-1)
+			if offset >= start && offset <= end {
+				colons = append(colons, offset)
+			}
+			mColon = removeRightmost1(mColon)
+		}
+	}
+	return colons
 }
