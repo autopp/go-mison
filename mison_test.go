@@ -2,6 +2,7 @@ package mison
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -384,6 +385,31 @@ func TestGenerateColonPositions(t *testing.T) {
 	for i, tt := range cases {
 		t.Run(fmt.Sprintf("case%d", i+i), func(t *testing.T) {
 			actual := generateColonPositions(tt.index, tt.start, tt.end, tt.level)
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
+
+func TestBuildStructualIndex(t *testing.T) {
+	cases := []struct {
+		input    string
+		level    int
+		expected [][]uint32
+	}{
+		{
+			input: `{"a":1,"b":{"c":2}}`,
+			level: 2,
+			expected: [][]uint32{
+				bitsToUint32("00000000000000000000010000010000"),
+				bitsToUint32("00000000000000001000010000010000"),
+			},
+		},
+	}
+
+	for i, tt := range cases {
+		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
+			actual, err := buildStructualIndex(strings.NewReader(tt.input), tt.level)
+			assert.Nil(t, err)
 			assert.Equal(t, tt.expected, actual)
 		})
 	}

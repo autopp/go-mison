@@ -3,6 +3,7 @@ package mison
 import (
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"math/bits"
 )
@@ -283,4 +284,8 @@ func generateColonPositions(index [][]uint32, start, end, level int) []int {
 		}
 	}
 	return colons
+}
+
+func buildStructualIndex(r io.Reader, level int) ([][]uint32, error) {
+	return nil, errors.New("not implemented")
 }
