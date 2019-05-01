@@ -117,11 +117,6 @@ func TestBuildCharacterBitmap(t *testing.T) {
 	}
 }
 
-type foo struct {
-	bar []int
-	baz []string
-}
-
 func TestBuildStructualCharacterBitmaps(t *testing.T) {
 	cases := []struct {
 		text          string
