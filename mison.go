@@ -300,5 +300,12 @@ func generateColonPositions(index [][]uint32, start, end, level int) []int {
 }
 
 func buildStructualIndex(r io.Reader, level int) ([][]uint32, error) {
-	return nil, errors.New("not implemented")
+	charactersBitmaps, err := buildStructualCharacterBitmaps(r)
+	if err != nil {
+		return nil, err
+	}
+
+	quoteBitmap := buildStructualQuoteBitmap(charactersBitmaps)
+	stringMaskBitmap := buildStringMaskBitmap(quoteBitmap)
+	return buildLeveledColonBitmaps(charactersBitmaps, stringMaskBitmap, level)
 }
