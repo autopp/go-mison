@@ -43,28 +43,6 @@ func popcnt(x uint32) int {
 }
 
 /*
-buildCharacterBitmap builds bitmap for specified character.
-*/
-func buildCharacterBitmap(text []byte, ch byte) []uint32 {
-	bitmap := make([]uint32, (len(text)+31)/32)
-	for i := range bitmap {
-		sublen := len(text) - i*32
-		if sublen > 32 {
-			sublen = 32
-		}
-		for _, x := range text[i*32 : i*32+sublen] {
-			bitmap[i] >>= 1
-			if x == ch {
-				bitmap[i] |= 1 << 31
-			}
-		}
-
-		bitmap[i] >>= uint(32 - sublen)
-	}
-	return bitmap
-}
-
-/*
 structualCharacterBitmaps represents set of bitmap for structual character.
 */
 type structualCharacterBitmaps struct {
@@ -80,15 +58,45 @@ buildStructualCharacterBitmaps builda structual character bitmaps.
 
 See section 4.2.1 (currently, SIMD is not used).
 */
-func buildStructualCharacterBitmaps(text string) *structualCharacterBitmaps {
-	jsonBytes := []byte(text)
-	return &structualCharacterBitmaps{
-		backslashes: buildCharacterBitmap(jsonBytes, '\\'),
-		quotes:      buildCharacterBitmap(jsonBytes, '"'),
-		colons:      buildCharacterBitmap(jsonBytes, ':'),
-		lBraces:     buildCharacterBitmap(jsonBytes, '{'),
-		rBraces:     buildCharacterBitmap(jsonBytes, '}'),
+func buildStructualCharacterBitmaps(r io.Reader) (*structualCharacterBitmaps, error) {
+	indices := map[byte]int{'\\': 0, '"': 1, ':': 2, '{': 3, '}': 4}
+	bitmaps := make([][]uint32, 5)
+	for c := 0; c < 5; c++ {
+		bitmaps[c] = make([]uint32, 0)
 	}
+	buf := make([]byte, 32)
+
+	for i := 0; ; i++ {
+		n, err := io.ReadFull(r, buf)
+
+		if err == io.EOF {
+			break
+		} else if err == nil || err == io.ErrUnexpectedEOF {
+			for c := 0; c < 5; c++ {
+				bitmaps[c] = append(bitmaps[c], 0)
+			}
+			for _, x := range buf[0:n] {
+				for c := 0; c < 5; c++ {
+					// bitmaps[c] = append(bitmaps[c], 0)
+					bitmaps[c][i] >>= 1
+				}
+
+				j, ok := indices[x]
+				if ok {
+					bitmaps[j][i] |= 1 << 31
+				}
+			}
+		} else {
+			return nil, err
+		}
+	}
+	return &structualCharacterBitmaps{
+		backslashes: bitmaps[indices['\\']],
+		quotes:      bitmaps[indices['"']],
+		colons:      bitmaps[indices[':']],
+		lBraces:     bitmaps[indices['{']],
+		rBraces:     bitmaps[indices['}']],
+	}, nil
 }
 
 /*

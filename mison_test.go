@@ -91,32 +91,6 @@ func TestSmearRightmost1(t *testing.T) {
 	}
 }
 
-func TestBuildCharacterBitmap(t *testing.T) {
-	cases := []struct {
-		input        string
-		ch           byte
-		expectedBits []string
-	}{
-		{input: `{"id":"id:\"a\"","reviews":50,"a`, ch: '\\', expectedBits: []string{"00000000000000000010010000000000"}},
-		{input: `{"id":"id:\"a\"","reviews":50,"a`, ch: '"', expectedBits: []string{"01000010000000101100100001010010"}},
-		{input: `{"id":"id:\"a\"","reviews":50,"a`, ch: ':', expectedBits: []string{"00000100000000000000001000100000"}},
-		{input: `{"id":"id:\"a\"","reviews":50,"a`, ch: '{', expectedBits: []string{"00000000000000000000000000000001"}},
-		{input: `{"id":"id:\"a\"","reviews":50,"a`, ch: '}', expectedBits: []string{"00000000000000000000000000000000"}},
-		{input: `{"id":"id:\"a\"","reviews":50,"attributes":{"breakfast":false,"l`, ch: '"', expectedBits: []string{"01000010000000101100100001010010", "01000000010000000001001000000000"}},
-		{input: `{"id":"id:\"a\"","reviews":50,"attributes"`, ch: '"', expectedBits: []string{"01000010000000101100100001010010", "00000000000000000000001000000000"}},
-	}
-
-	for _, tt := range cases {
-		title := fmt.Sprintf("%s, %c", tt.input, tt.ch)
-		t.Run(title, func(t *testing.T) {
-			expected := bitsToUint32(tt.expectedBits...)
-			actual := buildCharacterBitmap([]byte(tt.input), tt.ch)
-			msg := fmt.Sprintf("%s != %s", uint32SliceToBits(actual), tt.expectedBits)
-			assert.Equal(t, expected, actual, msg)
-		})
-	}
-}
-
 func TestBuildStructualCharacterBitmaps(t *testing.T) {
 	cases := []struct {
 		text          string
@@ -146,7 +120,9 @@ func TestBuildStructualCharacterBitmaps(t *testing.T) {
 				rBraces:     bitsToUint32(tt.rBraceBits...),
 			}
 
-			assert.Equal(t, expected, buildStructualCharacterBitmaps(tt.text))
+			actual, err := buildStructualCharacterBitmaps(strings.NewReader(tt.text))
+			assert.Nil(t, err)
+			assert.Equal(t, expected, actual)
 		})
 	}
 }
