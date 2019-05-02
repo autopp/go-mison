@@ -60,9 +60,12 @@ See section 4.2.1 (currently, SIMD is not used).
 */
 func buildStructualCharacterBitmaps(r io.Reader) (*structualCharacterBitmaps, error) {
 	indices := map[byte]int{'\\': 0, '"': 1, ':': 2, '{': 3, '}': 4}
-	bitmaps := make([][]uint32, 5)
-	for c := 0; c < 5; c++ {
-		bitmaps[c] = make([]uint32, 0)
+	bitmaps := [][]uint32{
+		make([]uint32, 0),
+		make([]uint32, 0),
+		make([]uint32, 0),
+		make([]uint32, 0),
+		make([]uint32, 0),
 	}
 	buf := make([]byte, 32)
 
@@ -76,15 +79,17 @@ func buildStructualCharacterBitmaps(r io.Reader) (*structualCharacterBitmaps, er
 				bitmaps[c] = append(bitmaps[c], 0)
 			}
 			for _, x := range buf[0:n] {
-				for c := 0; c < 5; c++ {
-					// bitmaps[c] = append(bitmaps[c], 0)
-					bitmaps[c][i] >>= 1
+				for _, bitmap := range bitmaps {
+					bitmap[i] >>= 1
 				}
 
 				j, ok := indices[x]
 				if ok {
 					bitmaps[j][i] |= 1 << 31
 				}
+			}
+			for _, bitmap := range bitmaps {
+				bitmap[i] >>= uint(32 - n)
 			}
 		} else {
 			return nil, err
