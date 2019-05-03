@@ -435,3 +435,35 @@ func TestBuildStructualIndex(t *testing.T) {
 		})
 	}
 }
+
+func TestRetrieveFieldName(t *testing.T) {
+	cases := []struct {
+		json     []byte
+		colon    int
+		expected []byte
+	}{
+		{
+			json:     []byte(`{"abc":1}`),
+			colon:    6,
+			expected: []byte("abc"),
+		},
+		{
+			json:     []byte("{\" a \"\n\t :1}"),
+			colon:    11,
+			expected: []byte(" abc "),
+		},
+		{
+			json:     []byte(`{\\"\\\"a\"":1}`),
+			colon:    12,
+			expected: []byte(`\"a"`),
+		},
+	}
+
+	for i, tt := range cases {
+		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
+			actual, err := retrieveFieldName(tt.json, tt.colon)
+			assert.Nil(t, err)
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}

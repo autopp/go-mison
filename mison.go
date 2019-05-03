@@ -309,3 +309,7 @@ func buildStructualIndex(r io.Reader, level int) ([][]uint32, error) {
 	stringMaskBitmap := buildStringMaskBitmap(quoteBitmap)
 	return buildLeveledColonBitmaps(charactersBitmaps, stringMaskBitmap, level)
 }
+
+func retrieveFieldName(json []byte, colon int) ([]byte, error) {
+	return nil, errors.New("not implemented")
+}
