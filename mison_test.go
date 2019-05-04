@@ -448,14 +448,14 @@ func TestRetrieveFieldName(t *testing.T) {
 			expected: []byte("abc"),
 		},
 		{
-			json:     []byte("{\" a \"\n\t :1}"),
+			json:     []byte("{\" abc \"\n\t :1}"),
 			colon:    11,
 			expected: []byte(" abc "),
 		},
 		{
-			json:     []byte(`{\\"\\\"a\"":1}`),
-			colon:    12,
-			expected: []byte(`\"a"`),
+			json:     []byte(`{\\"\\\"abc\"\\":1}`),
+			colon:    16,
+			expected: []byte(`\"abc"\`),
 		},
 	}
 
@@ -463,7 +463,7 @@ func TestRetrieveFieldName(t *testing.T) {
 		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
 			actual, err := retrieveFieldName(tt.json, tt.colon)
 			assert.Nil(t, err)
-			assert.Equal(t, tt.expected, actual)
+			assert.Equalf(t, tt.expected, actual, "expected: %q, actual: %q", tt.expected, actual)
 		})
 	}
 }
