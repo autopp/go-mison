@@ -6,6 +6,7 @@ import (
 	"io"
 	"math"
 	"math/bits"
+	"strconv"
 )
 
 /*
@@ -310,6 +311,50 @@ func buildStructualIndex(r io.Reader, level int) ([][]uint32, error) {
 	return buildLeveledColonBitmaps(charactersBitmaps, stringMaskBitmap, level)
 }
 
+func isStructualQuote(json []byte, i int) bool {
+	if json[i] != '"' {
+		return false
+	}
+
+	isEvenBackslash := true
+	for j := i - 1; j >= 0; j-- {
+		if json[j] != '\\' {
+			break
+		}
+		isEvenBackslash = !isEvenBackslash
+	}
+
+	return isEvenBackslash
+}
+
 func retrieveFieldName(json []byte, colon int) ([]byte, error) {
-	return nil, errors.New("not implemented")
+	// skip whitespaces
+	var i int
+	for i = colon - 1; i >= 0; i-- {
+		if json[i] != '\n' && json[i] != '\t' && json[i] != ' ' {
+			break
+		}
+	}
+
+	if i < 0 || !isStructualQuote(json, i) {
+		return nil, fmt.Errorf("ending quote for field at %d is not found", colon)
+	}
+
+	end := i
+	for i--; i >= 0; i-- {
+		if isStructualQuote(json, i) {
+			break
+		}
+	}
+
+	if i < 0 {
+		return nil, fmt.Errorf("starting quote for field at %d is not found", colon)
+	}
+	start := i
+	fieldName, err := strconv.Unquote(string(json[start : end+1]))
+	if err != nil {
+		return nil, err
+	}
+
+	return []byte(fieldName), nil
 }
