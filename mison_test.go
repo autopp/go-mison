@@ -438,30 +438,28 @@ func TestBuildStructualIndex(t *testing.T) {
 
 func TestRetrieveFieldName(t *testing.T) {
 	cases := []struct {
-		json     []byte
-		colon    int
-		expected []byte
+		json             []byte
+		stringMaskBitmap []uint32
+		colon            int
+		expected         []byte
 	}{
 		{
-			json:     []byte(`{"abc":1}`),
-			colon:    6,
-			expected: []byte("abc"),
+			json:             []byte(`{"abc":1}`),
+			stringMaskBitmap: bitsToUint32("00000000000000000000000000111100"),
+			colon:            6,
+			expected:         []byte("abc"),
 		},
 		{
-			json:     []byte("{\" abc \"\n\t :1}"),
-			colon:    11,
-			expected: []byte(" abc "),
-		},
-		{
-			json:     []byte(`{\\"\\\"abc\"\\":1}`),
-			colon:    16,
-			expected: []byte(`\"abc"\`),
+			json:             []byte(`{"\\\"abc\"\\":1}`),
+			stringMaskBitmap: bitsToUint32("00000000000000000011111111111100"),
+			colon:            14,
+			expected:         []byte(`\"abc"\`),
 		},
 	}
 
 	for i, tt := range cases {
 		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
-			actual, err := retrieveFieldName(tt.json, tt.colon)
+			actual, err := retrieveFieldName(tt.json, tt.stringMaskBitmap, tt.colon)
 			assert.Nil(t, err)
 			assert.Equalf(t, tt.expected, actual, "expected: %q, actual: %q", tt.expected, actual)
 		})

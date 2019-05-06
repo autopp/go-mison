@@ -311,47 +311,25 @@ func buildStructualIndex(r io.Reader, level int) ([][]uint32, error) {
 	return buildLeveledColonBitmaps(charactersBitmaps, stringMaskBitmap, level)
 }
 
-func isStructualQuote(json []byte, i int) bool {
-	if json[i] != '"' {
-		return false
+func retrieveFieldName(json []byte, stringMaskBitmap []uint32, colon int) ([]byte, error) {
+	// find ending quote
+	i := colon / 32
+	mask := stringMaskBitmap[i] & (uint32(1)<<uint32(colon) - 1)
+	if mask == uint32(0) {
+		return nil, errors.New("not implemented")
 	}
 
-	isEvenBackslash := true
-	for j := i - 1; j >= 0; j-- {
-		if json[j] != '\\' {
-			break
-		}
-		isEvenBackslash = !isEvenBackslash
+	leadingZeros := bits.LeadingZeros32(mask)
+	endQuote := 32*i + 31 - leadingZeros
+
+	leadingOnes := bits.LeadingZeros32(^(mask << uint32(leadingZeros)))
+
+	if leadingOnes == 32-leadingZeros {
+		return nil, errors.New("not implemented")
 	}
 
-	return isEvenBackslash
-}
-
-func retrieveFieldName(json []byte, colon int) ([]byte, error) {
-	// skip whitespaces
-	var i int
-	for i = colon - 1; i >= 0; i-- {
-		if json[i] != '\n' && json[i] != '\t' && json[i] != ' ' {
-			break
-		}
-	}
-
-	if i < 0 || !isStructualQuote(json, i) {
-		return nil, fmt.Errorf("ending quote for field at %d is not found", colon)
-	}
-
-	end := i
-	for i--; i >= 0; i-- {
-		if isStructualQuote(json, i) {
-			break
-		}
-	}
-
-	if i < 0 {
-		return nil, fmt.Errorf("starting quote for field at %d is not found", colon)
-	}
-	start := i
-	fieldName, err := strconv.Unquote(string(json[start : end+1]))
+	startQuote := endQuote - leadingOnes
+	fieldName, err := strconv.Unquote(string(json[startQuote : endQuote+1]))
 	if err != nil {
 		return nil, err
 	}
