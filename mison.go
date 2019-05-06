@@ -332,7 +332,17 @@ func retrieveFieldName(json []byte, stringMaskBitmap []uint32, colon int) ([]byt
 	leadingOnes := bits.LeadingZeros32(^(mask << uint32(leadingZeros)))
 
 	if leadingOnes == 32-leadingZeros {
-		return nil, errors.New("not implemented")
+		for i--; i >= 0; i-- {
+			l := bits.LeadingZeros32(^stringMaskBitmap[i])
+			leadingOnes += l
+			if l != 32 {
+				break
+			}
+		}
+
+		if i < 0 {
+			return nil, fmt.Errorf("starting quote for colon at %d is not found", colon)
+		}
 	}
 
 	startQuote := endQuote - leadingOnes

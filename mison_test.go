@@ -464,6 +464,34 @@ func TestRetrieveFieldName(t *testing.T) {
 			colon:    33,
 			expected: []byte("abc"),
 		},
+		{
+			json: []byte(`{                            "ab` + `c":1}`),
+			stringMaskBitmap: bitsToUint32(
+				"11000000000000000000000000000000",
+				"00000000000000000000000000000011",
+			),
+			colon:    34,
+			expected: []byte("abc"),
+		},
+		{
+			json: []byte(`{                            "ab` + `                                ` + `c":1}`),
+			stringMaskBitmap: bitsToUint32(
+				"11000000000000000000000000000000",
+				"11111111111111111111111111111111",
+				"00000000000000000000000000000011",
+			),
+			colon:    66,
+			expected: []byte("ab                                c"),
+		},
+		{
+			json: []byte(`{                              "` + `abc":1}`),
+			stringMaskBitmap: bitsToUint32(
+				"00000000000000000000000000000000",
+				"00000000000000000000000000001111",
+			),
+			colon:    36,
+			expected: []byte("abc"),
+		},
 	}
 
 	for i, tt := range cases {
