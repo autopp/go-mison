@@ -2,7 +2,6 @@ package mison
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -145,8 +144,7 @@ func TestBuildStructualCharacterBitmaps(t *testing.T) {
 				rBraces:     bitsToUint32(tt.rBraceBits...),
 			}
 
-			actual, err := buildStructualCharacterBitmaps(strings.NewReader(tt.text))
-			assert.NoError(t, err)
+			actual := buildStructualCharacterBitmaps([]byte(tt.text))
 			assert.Equal(t, expected, actual)
 		})
 	}
@@ -429,7 +427,7 @@ func TestBuildStructualIndex(t *testing.T) {
 
 	for i, tt := range cases {
 		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
-			actual, err := buildStructualIndex(strings.NewReader(tt.input), tt.level)
+			actual, err := buildStructualIndex([]byte(tt.input), tt.level)
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expected, actual)
 		})

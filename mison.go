@@ -3,7 +3,6 @@ package mison
 import (
 	"errors"
 	"fmt"
-	"io"
 	"math"
 	"math/bits"
 	"strconv"
@@ -59,50 +58,46 @@ buildStructualCharacterBitmaps builda structual character bitmaps.
 
 See section 4.2.1 (currently, SIMD is not used).
 */
-func buildStructualCharacterBitmaps(r io.Reader) (*structualCharacterBitmaps, error) {
+func buildStructualCharacterBitmaps(json []byte) *structualCharacterBitmaps {
 	indices := map[byte]int{'\\': 0, '"': 1, ':': 2, '{': 3, '}': 4}
+	jsonLen := len(json)
+	bitmapLen := (jsonLen-1)/32 + 1
 	bitmaps := [][]uint32{
-		make([]uint32, 0),
-		make([]uint32, 0),
-		make([]uint32, 0),
-		make([]uint32, 0),
-		make([]uint32, 0),
+		make([]uint32, bitmapLen),
+		make([]uint32, bitmapLen),
+		make([]uint32, bitmapLen),
+		make([]uint32, bitmapLen),
+		make([]uint32, bitmapLen),
 	}
-	buf := make([]byte, 32)
 
-	for i := 0; ; i++ {
-		n, err := io.ReadFull(r, buf)
-
-		if err == io.EOF {
-			break
-		} else if err == nil || err == io.ErrUnexpectedEOF {
-			for c := 0; c < 5; c++ {
-				bitmaps[c] = append(bitmaps[c], 0)
-			}
-			for _, x := range buf[0:n] {
-				for _, bitmap := range bitmaps {
-					bitmap[i] >>= 1
-				}
-
-				j, ok := indices[x]
-				if ok {
-					bitmaps[j][i] |= 1 << 31
-				}
-			}
+	for i := 0; i < bitmapLen; i++ {
+		sublen := jsonLen - i*32
+		if sublen > 32 {
+			sublen = 32
+		}
+		for _, x := range json[i*32 : i*32+sublen] {
 			for _, bitmap := range bitmaps {
-				bitmap[i] >>= uint(32 - n)
+				bitmap[i] >>= 1
 			}
-		} else {
-			return nil, err
+
+			j, ok := indices[x]
+			if ok {
+				bitmaps[j][i] |= 1 << 31
+			}
+		}
+
+		for _, bitmap := range bitmaps {
+			bitmap[i] >>= uint(32 - sublen)
 		}
 	}
+
 	return &structualCharacterBitmaps{
 		backslashes: bitmaps[indices['\\']],
 		quotes:      bitmaps[indices['"']],
 		colons:      bitmaps[indices[':']],
 		lBraces:     bitmaps[indices['{']],
 		rBraces:     bitmaps[indices['}']],
-	}, nil
+	}
 }
 
 /*
@@ -300,12 +295,8 @@ func generateColonPositions(index [][]uint32, start, end, level int) []int {
 	return colons
 }
 
-func buildStructualIndex(r io.Reader, level int) ([][]uint32, error) {
-	charactersBitmaps, err := buildStructualCharacterBitmaps(r)
-	if err != nil {
-		return nil, err
-	}
-
+func buildStructualIndex(json []byte, level int) ([][]uint32, error) {
+	charactersBitmaps := buildStructualCharacterBitmaps(json)
 	quoteBitmap := buildStructualQuoteBitmap(charactersBitmaps)
 	stringMaskBitmap := buildStringMaskBitmap(quoteBitmap)
 	return buildLeveledColonBitmaps(charactersBitmaps, stringMaskBitmap, level)
