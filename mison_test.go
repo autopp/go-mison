@@ -500,3 +500,27 @@ func TestRetrieveFieldName(t *testing.T) {
 		})
 	}
 }
+
+func TestBuildQueriedFieldTable(t *testing.T) {
+	cases := []struct {
+		queriedFields []string
+		expected      queriedFieldTable
+	}{
+		{
+			queriedFields: []string{"abc", "def"},
+			expected:      queriedFieldTable{"abc": nil, "def": nil},
+		},
+		{
+			queriedFields: []string{"abc.def", "abc.ghi", "jkl"},
+			expected:      queriedFieldTable{"abc": queriedFieldTable{"def": nil, "ghi": nil}, "jkl": nil},
+		},
+	}
+
+	for i, tt := range cases {
+		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
+			actual, err := buildQueriedFieldTable(tt.queriedFields)
+			assert.NoError(t, err)
+			assert.Equal(t, tt.expected, actual)
+		})
+	}
+}
