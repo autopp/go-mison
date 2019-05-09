@@ -345,8 +345,6 @@ func retrieveFieldName(json []byte, stringMaskBitmap []uint32, colon int) ([]byt
 	return []byte(fieldName), nil
 }
 
-type queriedFieldTable map[string]queriedFieldTable
-
-func buildQueriedFieldTable(queriedFields []string) (map[string]queriedFieldTable, error) {
+func buildQueriedFieldTable(queriedFields []string) (map[string]int, error) {
 	return nil, errors.New("not implemented")
 }

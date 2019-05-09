@@ -504,15 +504,15 @@ func TestRetrieveFieldName(t *testing.T) {
 func TestBuildQueriedFieldTable(t *testing.T) {
 	cases := []struct {
 		queriedFields []string
-		expected      queriedFieldTable
+		expected      map[string]int
 	}{
 		{
 			queriedFields: []string{"abc", "def"},
-			expected:      queriedFieldTable{"abc": nil, "def": nil},
+			expected:      map[string]int{"abc": 0, "def": 1},
 		},
 		{
 			queriedFields: []string{"abc.def", "abc.ghi", "jkl"},
-			expected:      queriedFieldTable{"abc": queriedFieldTable{"def": nil, "ghi": nil}, "jkl": nil},
+			expected:      map[string]int{"abc": -1, "abc.def": 0, "abc.ghi": 1, "jkl": 2},
 		},
 	}
 
