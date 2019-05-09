@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/bits"
 	"strconv"
+	"strings"
 )
 
 /*
@@ -346,5 +347,16 @@ func retrieveFieldName(json []byte, stringMaskBitmap []uint32, colon int) ([]byt
 }
 
 func buildQueriedFieldTable(queriedFields []string) (map[string]int, error) {
-	return nil, errors.New("not implemented")
+	t := make(map[string]int)
+	for i, field := range queriedFields {
+		keys := strings.Split(field, ".")
+		n := len(keys)
+		for j := 1; j <= n-1; j++ {
+			key := strings.Join(keys[0:j], ".")
+			t[key] = -1
+		}
+		t[field] = i
+	}
+
+	return t, nil
 }
