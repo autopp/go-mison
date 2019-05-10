@@ -349,10 +349,16 @@ func retrieveFieldName(json []byte, stringMaskBitmap []uint32, colon int) ([]byt
 func buildQueriedFieldTable(queriedFields []string) (map[string]int, error) {
 	t := make(map[string]int)
 	for i, field := range queriedFields {
+		if _, ok := t[field]; ok {
+			return nil, fmt.Errorf("duplicated field %q", field)
+		}
 		keys := strings.Split(field, ".")
 		n := len(keys)
 		for j := 1; j <= n-1; j++ {
 			key := strings.Join(keys[0:j], ".")
+			if v, ok := t[key]; ok && v >= 0 {
+				return nil, fmt.Errorf("duplicated field %q and %q", key, field)
+			}
 			t[key] = -1
 		}
 		t[field] = i

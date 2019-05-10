@@ -523,4 +523,19 @@ func TestBuildQueriedFieldTable(t *testing.T) {
 			assert.Equal(t, tt.expected, actual)
 		})
 	}
+
+	errCases := []struct {
+		queriedFields []string
+	}{
+		{
+			queriedFields: []string{"abc", "abc.def"},
+		},
+	}
+
+	for i, tt := range errCases {
+		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
+			_, err := buildQueriedFieldTable(tt.queriedFields)
+			assert.Error(t, err)
+		})
+	}
 }
