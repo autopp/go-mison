@@ -530,6 +530,9 @@ func TestBuildQueriedFieldTable(t *testing.T) {
 		{
 			queriedFields: []string{"abc", "abc.def"},
 		},
+		{
+			queriedFields: []string{"abc", "abc"},
+		},
 	}
 
 	for i, tt := range errCases {
