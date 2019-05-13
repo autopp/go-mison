@@ -386,29 +386,36 @@ func TestGenerateColonPositions(t *testing.T) {
 
 func TestBuildStructualIndex(t *testing.T) {
 	cases := []struct {
-		input    string
-		level    int
-		expected [][]uint32
+		input               string
+		level               int
+		stringMaskBitmap    []uint32
+		leveledColonBitmaps [][]uint32
 	}{
 		{
-			input: `{"a":1,"b":{"c":2}}`,
-			level: 2,
-			expected: [][]uint32{
+			input:            `{"a":1,"b":{"c":2}}`,
+			level:            2,
+			stringMaskBitmap: bitsToUint32("00000000000000000110001100001100"),
+			leveledColonBitmaps: [][]uint32{
 				bitsToUint32("00000000000000000000010000010000"),
 				bitsToUint32("00000000000000001000010000010000"),
 			},
 		},
 		{
-			input: `{"a":1,"b":{"c":2}}`,
-			level: 1,
-			expected: [][]uint32{
+			input:            `{"a":1,"b":{"c":2}}`,
+			level:            1,
+			stringMaskBitmap: bitsToUint32("00000000000000000110001100001100"),
+			leveledColonBitmaps: [][]uint32{
 				bitsToUint32("00000000000000000000010000010000"),
 			},
 		},
 		{
 			input: `                      {"a":1,"b":{"c":{"d":2},"e":3}}`,
 			level: 3,
-			expected: [][]uint32{
+			stringMaskBitmap: bitsToUint32(
+				"11000011000000000000000000000000",
+				"00000000000000011000001100011000",
+			),
+			leveledColonBitmaps: [][]uint32{
 				bitsToUint32(
 					"00000100000000000000000000000000",
 					"00000000000000000000000000000001",
@@ -429,7 +436,14 @@ func TestBuildStructualIndex(t *testing.T) {
 		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
 			actual, err := buildStructualIndex([]byte(tt.input), tt.level)
 			assert.NoError(t, err)
-			assert.Equal(t, tt.expected, actual)
+
+			expected := &StructualIndex{
+				json:                []byte(tt.input),
+				level:               tt.level,
+				stringMaskBitmap:    tt.stringMaskBitmap,
+				leveledColonBitmaps: tt.leveledColonBitmaps,
+			}
+			assert.Equal(t, expected, actual)
 		})
 	}
 }

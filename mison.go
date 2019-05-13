@@ -9,6 +9,13 @@ import (
 	"strings"
 )
 
+type StructualIndex struct {
+	json                []byte
+	level               int
+	stringMaskBitmap    []uint32
+	leveledColonBitmaps [][]uint32
+}
+
 /*
 removeRightmost1 removes the rightmost 1 in x.
 
@@ -296,11 +303,22 @@ func generateColonPositions(index [][]uint32, start, end, level int) []int {
 	return colons
 }
 
-func buildStructualIndex(json []byte, level int) ([][]uint32, error) {
+func buildStructualIndex(json []byte, level int) (*StructualIndex, error) {
 	charactersBitmaps := buildStructualCharacterBitmaps(json)
 	quoteBitmap := buildStructualQuoteBitmap(charactersBitmaps)
 	stringMaskBitmap := buildStringMaskBitmap(quoteBitmap)
-	return buildLeveledColonBitmaps(charactersBitmaps, stringMaskBitmap, level)
+	leveledColonBitmaps, err := buildLeveledColonBitmaps(charactersBitmaps, stringMaskBitmap, level)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &StructualIndex{
+		json:                json,
+		level:               level,
+		stringMaskBitmap:    stringMaskBitmap,
+		leveledColonBitmaps: leveledColonBitmaps,
+	}, nil
 }
 
 func retrieveFieldName(json []byte, stringMaskBitmap []uint32, colon int) ([]byte, error) {
