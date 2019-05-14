@@ -453,19 +453,19 @@ func TestRetrieveFieldName(t *testing.T) {
 		json             []byte
 		stringMaskBitmap []uint32
 		colon            int
-		expected         []byte
+		expected         string
 	}{
 		{
 			json:             []byte(`{"abc":1}`),
 			stringMaskBitmap: bitsToUint32("00000000000000000000000000111100"),
 			colon:            6,
-			expected:         []byte("abc"),
+			expected:         "abc",
 		},
 		{
 			json:             []byte(`{"\\\"abc\"\\":1}`),
 			stringMaskBitmap: bitsToUint32("00000000000000000011111111111100"),
 			colon:            14,
-			expected:         []byte(`\"abc"\`),
+			expected:         `\"abc"\`,
 		},
 		{
 			json: []byte(`{                         "abc" ` + ` : 1}`),
@@ -474,7 +474,7 @@ func TestRetrieveFieldName(t *testing.T) {
 				"00000000000000000000000000000000",
 			),
 			colon:    33,
-			expected: []byte("abc"),
+			expected: "abc",
 		},
 		{
 			json: []byte(`{                            "ab` + `c":1}`),
@@ -483,7 +483,7 @@ func TestRetrieveFieldName(t *testing.T) {
 				"00000000000000000000000000000011",
 			),
 			colon:    34,
-			expected: []byte("abc"),
+			expected: "abc",
 		},
 		{
 			json: []byte(`{                            "ab` + `                                ` + `c":1}`),
@@ -493,7 +493,7 @@ func TestRetrieveFieldName(t *testing.T) {
 				"00000000000000000000000000000011",
 			),
 			colon:    66,
-			expected: []byte("ab                                c"),
+			expected: "ab                                c",
 		},
 		{
 			json: []byte(`{                              "` + `abc":1}`),
@@ -502,7 +502,7 @@ func TestRetrieveFieldName(t *testing.T) {
 				"00000000000000000000000000001111",
 			),
 			colon:    36,
-			expected: []byte("abc"),
+			expected: "abc",
 		},
 	}
 

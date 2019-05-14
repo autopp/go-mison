@@ -321,7 +321,7 @@ func buildStructualIndex(json []byte, level int) (*StructualIndex, error) {
 	}, nil
 }
 
-func retrieveFieldName(json []byte, stringMaskBitmap []uint32, colon int) ([]byte, error) {
+func retrieveFieldName(json []byte, stringMaskBitmap []uint32, colon int) (string, error) {
 	// find ending quote
 	i := colon / 32
 	mask := stringMaskBitmap[i] & (uint32(1)<<uint32(colon) - 1)
@@ -330,7 +330,7 @@ func retrieveFieldName(json []byte, stringMaskBitmap []uint32, colon int) ([]byt
 		}
 
 		if i < 0 {
-			return nil, fmt.Errorf("ending quote for colon at %d is not found", colon)
+			return "", fmt.Errorf("ending quote for colon at %d is not found", colon)
 		}
 
 		mask = stringMaskBitmap[i]
@@ -351,17 +351,17 @@ func retrieveFieldName(json []byte, stringMaskBitmap []uint32, colon int) ([]byt
 		}
 
 		if i < 0 {
-			return nil, fmt.Errorf("starting quote for colon at %d is not found", colon)
+			return "", fmt.Errorf("starting quote for colon at %d is not found", colon)
 		}
 	}
 
 	startQuote := endQuote - leadingOnes
 	fieldName, err := strconv.Unquote(string(json[startQuote : endQuote+1]))
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return []byte(fieldName), nil
+	return fieldName, nil
 }
 
 func buildQueriedFieldTable(queriedFields []string) (map[string]int, error) {
