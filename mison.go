@@ -384,3 +384,14 @@ func buildQueriedFieldTable(queriedFields []string) (map[string]int, error) {
 
 	return t, nil
 }
+
+type parserState struct {
+}
+
+func NewParserState(structualIndex *StructualIndex, queriedFieldTable map[string]int) *parserState {
+	return &parserState{}
+}
+
+func NextField(s *parserState) int {
+	return -1
+}
