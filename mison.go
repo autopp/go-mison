@@ -386,10 +386,19 @@ func buildQueriedFieldTable(queriedFields []string) (map[string]int, error) {
 }
 
 type parserState struct {
+	structualIndex    *StructualIndex
+	queriedFieldTable map[string]int
+	currentRangeStart int
+	currentRangeEnd   int
+	currentLevel      int
+	currentColonCount int
 }
 
 func NewParserState(structualIndex *StructualIndex, queriedFieldTable map[string]int) *parserState {
-	return &parserState{}
+	return &parserState{
+		structualIndex:    structualIndex,
+		queriedFieldTable: queriedFieldTable,
+	}
 }
 
 func NextField(s *parserState) int {
