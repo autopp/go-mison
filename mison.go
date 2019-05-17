@@ -208,7 +208,10 @@ func newMaskStack() *maskStack {
 
 func (s *maskStack) push(index int, mask uint32) error {
 	if s.sp == len(s.body) {
-		panic("stack overflow")
+		s.body = append(s.body, struct {
+			index int
+			mask  uint32
+		}{})
 	}
 
 	s.body[s.sp].index = index
