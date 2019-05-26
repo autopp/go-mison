@@ -557,12 +557,24 @@ func TestBuildQueriedFieldTable(t *testing.T) {
 	}
 }
 
-func TestNextField(t *testing.T) {
+func TestStartParse(t *testing.T) {
 	cases := []struct {
 		structualIndex    *StructualIndex
 		queriedFieldTable map[string]int
 		expected          []int
 	}{
+		{
+			structualIndex: &StructualIndex{
+				json:             []byte(`{"b":2,"c":3,"a":1,}`),
+				level:            1,
+				stringMaskBitmap: bitsToUint32("00000000000000001100001100001100"),
+				leveledColonBitmaps: [][]uint32{
+					bitsToUint32("00000000000000010000010000010000"),
+				},
+			},
+			queriedFieldTable: map[string]int{"a": 0, "c": 1},
+			expected:          []int{1, 0},
+		},
 		{
 			structualIndex: &StructualIndex{
 				json:             []byte(`{"a":1,"b":{"c":2}}`),
@@ -580,11 +592,11 @@ func TestNextField(t *testing.T) {
 
 	for i, tt := range cases {
 		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
-			state := NewParserState(tt.structualIndex, tt.queriedFieldTable)
+			ch := startParse(tt.structualIndex, tt.queriedFieldTable)
 			actual := make([]int, 0)
 			for {
-				id := NextField(state)
-				if id < 0 {
+				id, ok := <-ch
+				if !ok {
 					break
 				}
 				actual = append(actual, id)

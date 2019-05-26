@@ -388,22 +388,8 @@ func buildQueriedFieldTable(queriedFields []string) (map[string]int, error) {
 	return t, nil
 }
 
-type parserState struct {
-	structualIndex    *StructualIndex
-	queriedFieldTable map[string]int
-	currentRangeStart int
-	currentRangeEnd   int
-	currentLevel      int
-	currentColonCount int
-}
-
-func NewParserState(structualIndex *StructualIndex, queriedFieldTable map[string]int) *parserState {
-	return &parserState{
-		structualIndex:    structualIndex,
-		queriedFieldTable: queriedFieldTable,
-	}
-}
-
-func NextField(s *parserState) int {
-	return -1
+func startParse(structualIndex *StructualIndex, queriedFieldTable map[string]int) <-chan int {
+	ch := make(chan int)
+	close(ch)
+	return ch
 }
