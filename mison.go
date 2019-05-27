@@ -388,8 +388,24 @@ func buildQueriedFieldTable(queriedFields []string) (map[string]int, error) {
 	return t, nil
 }
 
-func startParse(structualIndex *StructualIndex, queriedFieldTable map[string]int) <-chan int {
+func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan int {
+	parse := func(index *StructualIndex, queriedFieldTable map[string]int, start, end, level int, ch chan<- int) {
+		for _, colon := range generateColonPositions(index.leveledColonBitmaps, start, end, 0) {
+			name, err := retrieveFieldName(index.json, index.stringMaskBitmap, colon)
+			if err != nil {
+				panic(fmt.Sprintf("%s (TODO: handling error during parsing)", err))
+			}
+			if x, ok := queriedFieldTable[name]; ok {
+				ch <- x
+			}
+		}
+	}
+
 	ch := make(chan int)
-	close(ch)
+	go func() {
+		parse(index, queriedFieldTable, 0, len(index.json), 0, ch)
+		close(ch)
+	}()
+
 	return ch
 }
