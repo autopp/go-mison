@@ -389,21 +389,37 @@ func buildQueriedFieldTable(queriedFields []string) (map[string]int, error) {
 }
 
 func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan int {
-	parse := func(index *StructualIndex, queriedFieldTable map[string]int, start, end, level int, ch chan<- int) {
-		for _, colon := range generateColonPositions(index.leveledColonBitmaps, start, end, 0) {
-			name, err := retrieveFieldName(index.json, index.stringMaskBitmap, colon)
+	var parse func(*StructualIndex, map[string]int, int, int, int, string, chan<- int)
+	parse = func(index *StructualIndex, queriedFieldTable map[string]int, start, end, level int, namePrefix string, ch chan<- int) {
+		json := index.json
+		colons := generateColonPositions(index.leveledColonBitmaps, start, end, level)
+		for i, colon := range colons {
+			name, err := retrieveFieldName(json, index.stringMaskBitmap, colon)
 			if err != nil {
 				panic(fmt.Sprintf("%s (TODO: handling error during parsing)", err))
 			}
-			if x, ok := queriedFieldTable[name]; ok {
-				ch <- x
+
+			fullName := namePrefix + name
+			if id, ok := queriedFieldTable[fullName]; ok {
+				if id >= 0 {
+					// field is atomic value
+					ch <- id
+				} else {
+					var innerEnd int
+					if i < len(colons)-1 {
+						innerEnd = colons[i+1] - 1
+					} else {
+						innerEnd = end - 1
+					}
+					parse(index, queriedFieldTable, colon+1, innerEnd, level+1, fullName+".", ch)
+				}
 			}
 		}
 	}
 
 	ch := make(chan int)
 	go func() {
-		parse(index, queriedFieldTable, 0, len(index.json), 0, ch)
+		parse(index, queriedFieldTable, 0, len(index.json), 0, "", ch)
 		close(ch)
 	}()
 
