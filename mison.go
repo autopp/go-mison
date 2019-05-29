@@ -388,9 +388,14 @@ func buildQueriedFieldTable(queriedFields []string) (map[string]int, error) {
 	return t, nil
 }
 
-func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan int {
-	var parse func(*StructualIndex, map[string]int, int, int, int, string, chan<- int)
-	parse = func(index *StructualIndex, queriedFieldTable map[string]int, start, end, level int, namePrefix string, ch chan<- int) {
+type KeyValue struct {
+	fieldID int
+	value   string
+}
+
+func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan *KeyValue {
+	var parse func(*StructualIndex, map[string]int, int, int, int, string, chan<- *KeyValue)
+	parse = func(index *StructualIndex, queriedFieldTable map[string]int, start, end, level int, namePrefix string, ch chan<- *KeyValue) {
 		json := index.json
 		colons := generateColonPositions(index.leveledColonBitmaps, start, end, level)
 		for i, colon := range colons {
@@ -403,7 +408,7 @@ func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan 
 			if id, ok := queriedFieldTable[fullName]; ok {
 				if id >= 0 {
 					// field is atomic value
-					ch <- id
+					ch <- &KeyValue{fieldID: id}
 				} else {
 					var innerEnd int
 					if i < len(colons)-1 {
@@ -417,7 +422,7 @@ func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan 
 		}
 	}
 
-	ch := make(chan int)
+	ch := make(chan *KeyValue)
 	go func() {
 		parse(index, queriedFieldTable, 0, len(index.json), 0, "", ch)
 		close(ch)

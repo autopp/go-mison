@@ -595,11 +595,11 @@ func TestStartParse(t *testing.T) {
 			ch := startParse(tt.structualIndex, tt.queriedFieldTable)
 			actual := make([]int, 0)
 			for {
-				id, ok := <-ch
+				kv, ok := <-ch
 				if !ok {
 					break
 				}
-				actual = append(actual, id)
+				actual = append(actual, kv.fieldID)
 			}
 			assert.Equal(t, tt.expected, actual)
 		})
