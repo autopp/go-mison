@@ -561,7 +561,7 @@ func TestStartParse(t *testing.T) {
 	cases := []struct {
 		structualIndex    *StructualIndex
 		queriedFieldTable map[string]int
-		expected          []int
+		expected          []*KeyValue
 	}{
 		{
 			structualIndex: &StructualIndex{
@@ -573,7 +573,7 @@ func TestStartParse(t *testing.T) {
 				},
 			},
 			queriedFieldTable: map[string]int{"a": 0, "c": 1},
-			expected:          []int{1, 0},
+			expected:          []*KeyValue{{1, "3"}, {0, "1"}},
 		},
 		{
 			structualIndex: &StructualIndex{
@@ -586,20 +586,20 @@ func TestStartParse(t *testing.T) {
 				},
 			},
 			queriedFieldTable: map[string]int{"a": 0, "b": -1, "b.c": 1},
-			expected:          []int{0, 1},
+			expected:          []*KeyValue{{0, "1"}, {1, "2"}},
 		},
 	}
 
 	for i, tt := range cases {
 		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
 			ch := startParse(tt.structualIndex, tt.queriedFieldTable)
-			actual := make([]int, 0)
+			actual := make([]*KeyValue, 0)
 			for {
 				kv, ok := <-ch
 				if !ok {
 					break
 				}
-				actual = append(actual, kv.fieldID)
+				actual = append(actual, kv)
 			}
 			assert.Equal(t, tt.expected, actual)
 		})

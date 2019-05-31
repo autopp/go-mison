@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"math/bits"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -393,6 +394,30 @@ type KeyValue struct {
 	value   string
 }
 
+func parseLiteral(json []byte, colon int) (string, error) {
+	i := colon + 1
+	size := len(json)
+	// skip blanks
+	for ; i < size; i++ {
+		if !(json[i] == ' ' || json[i] == '\t' || json[i] == '\n') {
+			break
+		}
+	}
+
+	if i == size {
+		return "", errors.New("value is not found")
+	}
+
+	// Now parse literal
+	r := regexp.MustCompile(`\A(true|false|[0-9]+|"[^ \t\n"]*")`)
+	literal := r.Find(json[i:size])
+	if literal == nil {
+		return "", fmt.Errorf("value is not found at %d", i)
+	}
+
+	return string(literal), nil
+}
+
 func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan *KeyValue {
 	var parse func(*StructualIndex, map[string]int, int, int, int, string, chan<- *KeyValue)
 	parse = func(index *StructualIndex, queriedFieldTable map[string]int, start, end, level int, namePrefix string, ch chan<- *KeyValue) {
@@ -408,8 +433,14 @@ func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan 
 			if id, ok := queriedFieldTable[fullName]; ok {
 				if id >= 0 {
 					// field is atomic value
-					ch <- &KeyValue{fieldID: id}
+					// parse value
+					v, err := parseLiteral(index.json, colon)
+					if err != nil {
+						panic(err)
+					}
+					ch <- &KeyValue{fieldID: id, value: v}
 				} else {
+					// field is objetct value
 					var innerEnd int
 					if i < len(colons)-1 {
 						innerEnd = colons[i+1] - 1
