@@ -612,6 +612,31 @@ func TestStartParse(t *testing.T) {
 			queriedFieldTable: map[string]int{"a": 0, "b": 1},
 			expected:          []*KeyValue{{0, `"foo"`}, {1, `"bar\"\\"`}},
 		},
+		{
+			structualIndex: &StructualIndex{
+				json:             []byte(`{"a":0,"b":1}`),
+				level:            2,
+				stringMaskBitmap: bitsToUint32("00000000000000000000001100001100"),
+				leveledColonBitmaps: [][]uint32{
+					bitsToUint32("00000000000000000000010000010000"),
+					bitsToUint32("00000000000000000000010000010000"),
+				},
+			},
+			queriedFieldTable: map[string]int{"a": -1, "a.b": 0},
+			expected:          []*KeyValue{},
+		},
+		{
+			structualIndex: &StructualIndex{
+				json:             []byte(`{"a":{"b":0}}`),
+				level:            1,
+				stringMaskBitmap: bitsToUint32("00000000000000000000000110001100"),
+				leveledColonBitmaps: [][]uint32{
+					bitsToUint32("00000000000000000000000000010000"),
+				},
+			},
+			queriedFieldTable: map[string]int{"a": 0},
+			expected:          []*KeyValue{},
+		},
 	}
 
 	for i, tt := range cases {
