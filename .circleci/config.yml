@@ -1,0 +1,16 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.9
+
+    working_directory: /go/src/github.com/autopp/go-mison
+
+    steps:
+      - checkout
+      - run:
+          name: install dependencies
+          command: go get github.com/stretchr/testify/assert
+      - run:
+          name: run unit tests
+          command: go test -v
