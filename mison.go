@@ -470,3 +470,15 @@ func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan 
 
 	return ch
 }
+
+type Parser struct {
+	queriedFieldTable map[string]int
+}
+
+func NewParser(queriedFields []string) (*Parser, error) {
+	t, err := buildQueriedFieldTable(queriedFields)
+	if err != nil {
+		return nil, err
+	}
+	return &Parser{queriedFieldTable: t}, nil
+}
