@@ -482,3 +482,7 @@ func NewParser(queriedFields []string) (*Parser, error) {
 	}
 	return &Parser{queriedFieldTable: t}, nil
 }
+
+func (*Parser) Parse(json []byte) (<-chan *KeyValue, error) {
+	return nil, errors.New("not implemented")
+}

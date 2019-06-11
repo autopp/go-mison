@@ -654,3 +654,62 @@ func TestStartParse(t *testing.T) {
 		})
 	}
 }
+
+func TestParserParse(t *testing.T) {
+	cases := []struct {
+		json          []byte
+		queriedFields []string
+		expected      []*KeyValue
+	}{
+		{
+			json:          []byte(`{"b":2,"c":3,"a":1,}`),
+			queriedFields: []string{"a", "c"},
+			expected:      []*KeyValue{{1, "3"}, {0, "1"}},
+		},
+		{
+			json:          []byte(`{"a":1,"b":{"c":2}}`),
+			queriedFields: []string{"a", "b", "b.c"},
+			expected:      []*KeyValue{{0, "1"}, {1, "2"}},
+		},
+		{
+			json:          []byte(`{"a":true,"b":false,"c":null}`),
+			queriedFields: []string{"a", "b", "c"},
+			expected:      []*KeyValue{{0, "true"}, {1, "false"}, {2, "null"}},
+		},
+		{
+			json:          []byte(`{"a":"foo","b":"bar\"\\"}`),
+			queriedFields: []string{"a", "b"},
+			expected:      []*KeyValue{{0, `"foo"`}, {1, `"bar\"\\"`}},
+		},
+		{
+			json:          []byte(`{"a":0,"b":1}`),
+			queriedFields: []string{"a", "a.b"},
+			expected:      []*KeyValue{},
+		},
+		{
+			json:          []byte(`{"a":{"b":0}}`),
+			queriedFields: []string{"a"},
+			expected:      []*KeyValue{},
+		},
+	}
+
+	for i, tt := range cases {
+		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
+			p, err := NewParser(tt.queriedFields)
+			if assert.NoError(t, err) {
+				ch, err := p.Parse(tt.json)
+				if assert.NoError(t, err) {
+					actual := make([]*KeyValue, 0)
+					for {
+						kv, ok := <-ch
+						if !ok {
+							break
+						}
+						actual = append(actual, kv)
+					}
+					assert.Equal(t, tt.expected, actual)
+				}
+			}
+		})
+	}
+}
