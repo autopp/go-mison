@@ -518,23 +518,28 @@ func TestRetrieveFieldName(t *testing.T) {
 func TestBuildQueriedFieldTable(t *testing.T) {
 	cases := []struct {
 		queriedFields []string
-		expected      map[string]int
+		table         map[string]int
+		level         int
 	}{
 		{
 			queriedFields: []string{"abc", "def"},
-			expected:      map[string]int{"abc": 0, "def": 1},
+			table:         map[string]int{"abc": 0, "def": 1},
+			level:         1,
 		},
 		{
 			queriedFields: []string{"abc.def", "abc.ghi", "jkl"},
-			expected:      map[string]int{"abc": -1, "abc.def": 0, "abc.ghi": 1, "jkl": 2},
+			table:         map[string]int{"abc": -1, "abc.def": 0, "abc.ghi": 1, "jkl": 2},
+			level:         2,
 		},
 	}
 
 	for i, tt := range cases {
 		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
-			actual, err := buildQueriedFieldTable(tt.queriedFields)
-			assert.NoError(t, err)
-			assert.Equal(t, tt.expected, actual)
+			table, level, err := buildQueriedFieldTable(tt.queriedFields)
+			if assert.NoError(t, err) {
+				assert.Equal(t, tt.table, table)
+				assert.Equal(t, tt.level, level)
+			}
 		})
 	}
 
@@ -551,7 +556,7 @@ func TestBuildQueriedFieldTable(t *testing.T) {
 
 	for i, tt := range errCases {
 		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
-			_, err := buildQueriedFieldTable(tt.queriedFields)
+			_, _, err := buildQueriedFieldTable(tt.queriedFields)
 			assert.Error(t, err)
 		})
 	}

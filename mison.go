@@ -368,25 +368,29 @@ func retrieveFieldName(json []byte, stringMaskBitmap []uint32, colon int) (strin
 	return fieldName, nil
 }
 
-func buildQueriedFieldTable(queriedFields []string) (map[string]int, error) {
+func buildQueriedFieldTable(queriedFields []string) (map[string]int, int, error) {
 	t := make(map[string]int)
+	level := 1
 	for i, field := range queriedFields {
 		if _, ok := t[field]; ok {
-			return nil, fmt.Errorf("duplicated field %q", field)
+			return nil, 0, fmt.Errorf("duplicated field %q", field)
 		}
 		keys := strings.Split(field, ".")
 		n := len(keys)
 		for j := 1; j <= n-1; j++ {
 			key := strings.Join(keys[0:j], ".")
 			if v, ok := t[key]; ok && v >= 0 {
-				return nil, fmt.Errorf("duplicated field %q and %q", key, field)
+				return nil, 0, fmt.Errorf("duplicated field %q and %q", key, field)
 			}
 			t[key] = -1
 		}
 		t[field] = i
+		if n > level {
+			level = n
+		}
 	}
 
-	return t, nil
+	return t, level, nil
 }
 
 type KeyValue struct {
@@ -473,14 +477,15 @@ func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan 
 
 type Parser struct {
 	queriedFieldTable map[string]int
+	level             int
 }
 
 func NewParser(queriedFields []string) (*Parser, error) {
-	t, err := buildQueriedFieldTable(queriedFields)
+	t, level, err := buildQueriedFieldTable(queriedFields)
 	if err != nil {
 		return nil, err
 	}
-	return &Parser{queriedFieldTable: t}, nil
+	return &Parser{queriedFieldTable: t, level: level}, nil
 }
 
 func (*Parser) Parse(json []byte) (<-chan *KeyValue, error) {
