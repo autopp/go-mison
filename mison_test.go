@@ -336,8 +336,9 @@ func TestBuildLeveledColonBitmaps(t *testing.T) {
 	for i, tt := range cases {
 		t.Run(fmt.Sprintf("case%d", i+1), func(t *testing.T) {
 			actual, err := buildLeveledColonBitmaps(tt.bitmaps, tt.stringMask, tt.level)
-			assert.NoError(t, err)
-			assert.Equal(t, tt.expected, actual)
+			if assert.NoError(t, err) {
+				assert.Equal(t, tt.expected, actual)
+			}
 		})
 	}
 }
@@ -435,15 +436,15 @@ func TestBuildStructualIndex(t *testing.T) {
 	for i, tt := range cases {
 		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
 			actual, err := buildStructualIndex([]byte(tt.input), tt.level)
-			assert.NoError(t, err)
-
-			expected := &StructualIndex{
-				json:                []byte(tt.input),
-				level:               tt.level,
-				stringMaskBitmap:    tt.stringMaskBitmap,
-				leveledColonBitmaps: tt.leveledColonBitmaps,
+			if assert.NoError(t, err) {
+				expected := &StructualIndex{
+					json:                []byte(tt.input),
+					level:               tt.level,
+					stringMaskBitmap:    tt.stringMaskBitmap,
+					leveledColonBitmaps: tt.leveledColonBitmaps,
+				}
+				assert.Equal(t, expected, actual)
 			}
-			assert.Equal(t, expected, actual)
 		})
 	}
 }
@@ -509,8 +510,9 @@ func TestRetrieveFieldName(t *testing.T) {
 	for i, tt := range cases {
 		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
 			actual, err := retrieveFieldName(tt.json, tt.stringMaskBitmap, tt.colon)
-			assert.NoError(t, err)
-			assert.Equalf(t, tt.expected, actual, "expected: %q, actual: %q", tt.expected, actual)
+			if assert.NoError(t, err) {
+				assert.Equalf(t, tt.expected, actual, "expected: %q, actual: %q", tt.expected, actual)
+			}
 		})
 	}
 }
