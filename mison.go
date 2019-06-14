@@ -488,6 +488,11 @@ func NewParser(queriedFields []string) (*Parser, error) {
 	return &Parser{queriedFieldTable: t, level: level}, nil
 }
 
-func (*Parser) Parse(json []byte) (<-chan *KeyValue, error) {
-	return nil, errors.New("not implemented")
+func (p *Parser) Parse(json []byte) (<-chan *KeyValue, error) {
+	index, err := buildStructualIndex(json, p.level)
+	if err != nil {
+		return nil, err
+	}
+
+	return startParse(index, p.queriedFieldTable), nil
 }
