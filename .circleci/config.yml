@@ -10,9 +10,18 @@ jobs:
 
     steps:
       - checkout
+      - restore_cache:
+          name: Restore go modules cache
+          keys:
+              - v1-mod-{{ .Branch }}-{{ checksum "go/go.mod" }}
       - run:
           name: install dependencies
           command: go mod download
+      - save_cache:
+          name: Save go modules cache
+          key: v1-mod-{{ .Branch }}-{{ checksum "go/go.mod" }}
+          paths:
+              - ~/go/pkg/mod/cache
       - run:
           name: run unit tests
           command: go test -v
