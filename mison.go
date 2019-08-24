@@ -368,6 +368,13 @@ func retrieveFieldName(json []byte, stringMaskBitmap []uint32, colon int) (strin
 	return fieldName, nil
 }
 
+type queriedFieldTable map[string]queriedFieldId
+
+type queriedFieldId struct {
+	id int
+	children queriedFieldTable
+}
+
 func buildQueriedFieldTable(queriedFields []string) (map[string]int, int, error) {
 	t := make(map[string]int)
 	level := 1
