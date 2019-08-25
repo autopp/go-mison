@@ -520,18 +520,20 @@ func TestRetrieveFieldName(t *testing.T) {
 func TestBuildQueriedFieldTable(t *testing.T) {
 	cases := []struct {
 		queriedFields []string
-		table         map[string]int
+		table         queriedFieldTable
 		level         int
 	}{
 		{
 			queriedFields: []string{"abc", "def"},
-			table:         map[string]int{"abc": 0, "def": 1},
+			table:         queriedFieldTable{"abc": queriedFieldId{id: 0}, "def": queriedFieldId{id: 1}},
 			level:         1,
 		},
 		{
 			queriedFields: []string{"abc.def", "abc.ghi", "jkl"},
-			table:         map[string]int{"abc": -1, "abc.def": 0, "abc.ghi": 1, "jkl": 2},
-			level:         2,
+			table: queriedFieldTable{
+				"abc": queriedFieldId{children: queriedFieldTable{"def": queriedFieldId{id: 0}, "ghi": queriedFieldId{id: 1}}},
+				"jkl": queriedFieldId{id: 2}},
+			level: 2,
 		},
 	}
 
