@@ -375,7 +375,28 @@ type queriedFieldID struct {
 	children queriedFieldTable
 }
 
-func buildQueriedFieldTable(queriedFields []string) (map[string]int, int, error) {
+func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField string, level int) (int, error) {
+	return -1, errors.New("not implemented")
+}
+
+func buildQueriedFieldTable(queriedFields []string) (queriedFieldTable, int, error) {
+	t := make(queriedFieldTable)
+	level := 0
+
+	for _, field := range queriedFields {
+		l, err := buildQueriedFieldTableFromSingleField(t, field, 1)
+		if err != nil {
+			return nil, -1, err
+		}
+		if l > level {
+			level = l
+		}
+	}
+
+	return t, level, nil
+}
+
+func buildQueriedFieldTableOld(queriedFields []string) (map[string]int, int, error) {
 	t := make(map[string]int)
 	level := 1
 	for i, field := range queriedFields {
@@ -488,7 +509,7 @@ type Parser struct {
 }
 
 func NewParser(queriedFields []string) (*Parser, error) {
-	t, level, err := buildQueriedFieldTable(queriedFields)
+	t, level, err := buildQueriedFieldTableOld(queriedFields)
 	if err != nil {
 		return nil, err
 	}
