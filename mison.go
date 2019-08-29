@@ -381,7 +381,10 @@ func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField str
 		splited := strings.SplitN(queriedField, ".", 2)
 		parent := splited[0]
 		child := splited[1]
-		t[parent] = &queriedFieldID{children: make(queriedFieldTable)}
+
+		if _, ok := t[parent]; !ok {
+			t[parent] = &queriedFieldID{children: make(queriedFieldTable)}
+		}
 		l, err := buildQueriedFieldTableFromSingleField(t[parent].children, child, nextID, level+1)
 		if err != nil {
 			return -1, err
@@ -392,7 +395,7 @@ func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField str
 	} else {
 		t[queriedField] = &queriedFieldID{id: nextID}
 	}
-	return level, nil
+	return maxLevel, nil
 }
 
 func buildQueriedFieldTable(queriedFields []string) (queriedFieldTable, int, error) {
