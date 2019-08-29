@@ -375,16 +375,32 @@ type queriedFieldID struct {
 	children queriedFieldTable
 }
 
-func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField string, level int) (int, error) {
-	return -1, errors.New("not implemented")
+func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField string, nextID int, level int) (int, error) {
+	maxLevel := level
+	if strings.ContainsRune(queriedField, '.') {
+		splited := strings.SplitN(queriedField, ".", 2)
+		parent := splited[0]
+		child := splited[1]
+		t[parent] = &queriedFieldID{children: make(queriedFieldTable)}
+		l, err := buildQueriedFieldTableFromSingleField(t[parent].children, child, nextID, level+1)
+		if err != nil {
+			return -1, err
+		}
+		if l > maxLevel {
+			maxLevel = l
+		}
+	} else {
+		t[queriedField] = &queriedFieldID{id: nextID}
+	}
+	return level, nil
 }
 
 func buildQueriedFieldTable(queriedFields []string) (queriedFieldTable, int, error) {
 	t := make(queriedFieldTable)
 	level := 0
 
-	for _, field := range queriedFields {
-		l, err := buildQueriedFieldTableFromSingleField(t, field, 1)
+	for i, field := range queriedFields {
+		l, err := buildQueriedFieldTableFromSingleField(t, field, i, 1)
 		if err != nil {
 			return nil, -1, err
 		}
