@@ -375,7 +375,7 @@ type queriedFieldID struct {
 	children queriedFieldTable
 }
 
-func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField string, nextID int, level int) (int, error) {
+func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField, fullField string, nextID int, level int) (int, error) {
 	maxLevel := level
 	if strings.ContainsRune(queriedField, '.') {
 		splited := strings.SplitN(queriedField, ".", 2)
@@ -384,8 +384,10 @@ func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField str
 
 		if _, ok := t[parent]; !ok {
 			t[parent] = &queriedFieldID{children: make(queriedFieldTable)}
+		} else if t[parent].children == nil {
+			return -1, fmt.Errorf("duplicated field %q", fullField)
 		}
-		l, err := buildQueriedFieldTableFromSingleField(t[parent].children, child, nextID, level+1)
+		l, err := buildQueriedFieldTableFromSingleField(t[parent].children, child, fullField, nextID, level+1)
 		if err != nil {
 			return -1, err
 		}
@@ -393,6 +395,9 @@ func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField str
 			maxLevel = l
 		}
 	} else {
+		if _, ok := t[queriedField]; ok {
+			return -1, fmt.Errorf("duplicated field %q", fullField)
+		}
 		t[queriedField] = &queriedFieldID{id: nextID}
 	}
 	return maxLevel, nil
@@ -403,7 +408,7 @@ func buildQueriedFieldTable(queriedFields []string) (queriedFieldTable, int, err
 	level := 0
 
 	for i, field := range queriedFields {
-		l, err := buildQueriedFieldTableFromSingleField(t, field, i, 1)
+		l, err := buildQueriedFieldTableFromSingleField(t, field, field, i, 1)
 		if err != nil {
 			return nil, -1, err
 		}
