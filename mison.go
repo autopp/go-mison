@@ -480,9 +480,9 @@ func parseLiteral(json []byte, colon int) (string, error) {
 	return string(literal), nil
 }
 
-func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan *KeyValue {
-	var parse func(*StructualIndex, map[string]int, int, int, int, string, chan<- *KeyValue)
-	parse = func(index *StructualIndex, queriedFieldTable map[string]int, start, end, level int, namePrefix string, ch chan<- *KeyValue) {
+func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue {
+	var parse func(*StructualIndex, queriedFieldTable, int, int, int, string, chan<- *KeyValue)
+	parse = func(index *StructualIndex, table queriedFieldTable, start, end, level int, namePrefix string, ch chan<- *KeyValue) {
 		json := index.json
 		colons := generateColonPositions(index.leveledColonBitmaps, start, end, level)
 		for i, colon := range colons {
@@ -492,8 +492,8 @@ func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan 
 			}
 
 			fullName := namePrefix + name
-			if id, ok := queriedFieldTable[fullName]; ok {
-				if id >= 0 {
+			if id, ok := table[fullName]; ok {
+				if id.children == nil {
 					// field is atomic value
 					// parse value
 					v, err := parseLiteral(index.json, colon)
@@ -502,7 +502,7 @@ func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan 
 					} else if err != nil {
 						panic(err)
 					} else {
-						ch <- &KeyValue{fieldID: id, value: v}
+						ch <- &KeyValue{fieldID: id.id, value: v}
 					}
 				} else {
 					// field is objetct value
@@ -512,7 +512,7 @@ func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan 
 					} else {
 						innerEnd = end - 1
 					}
-					parse(index, queriedFieldTable, colon+1, innerEnd, level+1, fullName+".", ch)
+					parse(index, table, colon+1, innerEnd, level+1, fullName+".", ch)
 				}
 			}
 		}
@@ -520,7 +520,7 @@ func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan 
 
 	ch := make(chan *KeyValue)
 	go func() {
-		parse(index, queriedFieldTable, 0, len(index.json), 0, "", ch)
+		parse(index, table, 0, len(index.json), 0, "", ch)
 		close(ch)
 	}()
 
@@ -528,12 +528,12 @@ func startParse(index *StructualIndex, queriedFieldTable map[string]int) <-chan 
 }
 
 type Parser struct {
-	queriedFieldTable map[string]int
+	queriedFieldTable queriedFieldTable
 	level             int
 }
 
 func NewParser(queriedFields []string) (*Parser, error) {
-	t, level, err := buildQueriedFieldTableOld(queriedFields)
+	t, level, err := buildQueriedFieldTable(queriedFields)
 	if err != nil {
 		return nil, err
 	}
