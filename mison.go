@@ -368,9 +368,9 @@ func retrieveFieldName(json []byte, stringMaskBitmap []uint32, colon int) (strin
 	return fieldName, nil
 }
 
-type queriedFieldTable map[string]*queriedFieldID
+type queriedFieldTable map[string]*queriedFieldEntry
 
-type queriedFieldID struct {
+type queriedFieldEntry struct {
 	id       int
 	children queriedFieldTable
 }
@@ -383,7 +383,7 @@ func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField, fu
 		child := splited[1]
 
 		if _, ok := t[parent]; !ok {
-			t[parent] = &queriedFieldID{children: make(queriedFieldTable)}
+			t[parent] = &queriedFieldEntry{children: make(queriedFieldTable)}
 		} else if t[parent].children == nil {
 			return -1, fmt.Errorf("duplicated field %q", fullField)
 		}
@@ -398,7 +398,7 @@ func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField, fu
 		if _, ok := t[queriedField]; ok {
 			return -1, fmt.Errorf("duplicated field %q", fullField)
 		}
-		t[queriedField] = &queriedFieldID{id: nextID}
+		t[queriedField] = &queriedFieldEntry{id: nextID}
 	}
 	return maxLevel, nil
 }

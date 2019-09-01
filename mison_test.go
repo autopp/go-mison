@@ -525,14 +525,14 @@ func TestBuildQueriedFieldTable(t *testing.T) {
 	}{
 		{
 			queriedFields: []string{"abc", "def"},
-			table:         queriedFieldTable{"abc": &queriedFieldID{id: 0}, "def": &queriedFieldID{id: 1}},
+			table:         queriedFieldTable{"abc": &queriedFieldEntry{id: 0}, "def": &queriedFieldEntry{id: 1}},
 			level:         1,
 		},
 		{
 			queriedFields: []string{"abc.def", "abc.ghi", "jkl"},
 			table: queriedFieldTable{
-				"abc": &queriedFieldID{children: queriedFieldTable{"def": &queriedFieldID{id: 0}, "ghi": &queriedFieldID{id: 1}}},
-				"jkl": &queriedFieldID{id: 2}},
+				"abc": &queriedFieldEntry{children: queriedFieldTable{"def": &queriedFieldEntry{id: 0}, "ghi": &queriedFieldEntry{id: 1}}},
+				"jkl": &queriedFieldEntry{id: 2}},
 			level: 2,
 		},
 	}
