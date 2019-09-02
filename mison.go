@@ -492,8 +492,8 @@ func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue
 			}
 
 			fullName := namePrefix + name
-			if id, ok := table[fullName]; ok {
-				if id.children == nil {
+			if entry, ok := table[name]; ok {
+				if entry.children == nil {
 					// field is atomic value
 					// parse value
 					v, err := parseLiteral(index.json, colon)
@@ -502,7 +502,7 @@ func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue
 					} else if err != nil {
 						panic(err)
 					} else {
-						ch <- &KeyValue{fieldID: id.id, value: v}
+						ch <- &KeyValue{fieldID: entry.id, value: v}
 					}
 				} else {
 					// field is objetct value
@@ -512,7 +512,7 @@ func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue
 					} else {
 						innerEnd = end - 1
 					}
-					parse(index, table, colon+1, innerEnd, level+1, fullName+".", ch)
+					parse(index, entry.children, colon+1, innerEnd, level+1, fullName+".", ch)
 				}
 			}
 		}
