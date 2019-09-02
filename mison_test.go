@@ -568,9 +568,9 @@ func TestBuildQueriedFieldTable(t *testing.T) {
 
 func TestStartParse(t *testing.T) {
 	cases := []struct {
-		structualIndex    *StructualIndex
-		queriedFieldTable map[string]int
-		expected          []*KeyValue
+		structualIndex *StructualIndex
+		table          queriedFieldTable
+		expected       []*KeyValue
 	}{
 		{
 			structualIndex: &StructualIndex{
@@ -581,8 +581,8 @@ func TestStartParse(t *testing.T) {
 					bitsToUint32("00000000000000010000010000010000"),
 				},
 			},
-			queriedFieldTable: map[string]int{"a": 0, "c": 1},
-			expected:          []*KeyValue{{1, "3"}, {0, "1"}},
+			table:    queriedFieldTable{"a": &queriedFieldEntry{id: 0}, "c": &queriedFieldEntry{id: 1}},
+			expected: []*KeyValue{{1, "3"}, {0, "1"}},
 		},
 		{
 			structualIndex: &StructualIndex{
@@ -594,8 +594,11 @@ func TestStartParse(t *testing.T) {
 					bitsToUint32("00000000000000001000010000010000"),
 				},
 			},
-			queriedFieldTable: map[string]int{"a": 0, "b": -1, "b.c": 1},
-			expected:          []*KeyValue{{0, "1"}, {1, "2"}},
+			table: queriedFieldTable{
+				"a": &queriedFieldEntry{id: 0},
+				"b": &queriedFieldEntry{children: queriedFieldTable{"c": &queriedFieldEntry{id: 1}}},
+			},
+			expected: []*KeyValue{{0, "1"}, {1, "2"}},
 		},
 		{
 			structualIndex: &StructualIndex{
@@ -606,8 +609,12 @@ func TestStartParse(t *testing.T) {
 					bitsToUint32("00000000100000000010000000010000"),
 				},
 			},
-			queriedFieldTable: map[string]int{"a": 0, "b": 1, "c": 2},
-			expected:          []*KeyValue{{0, "true"}, {1, "false"}, {2, "null"}},
+			table: queriedFieldTable{
+				"a": &queriedFieldEntry{id: 0},
+				"b": &queriedFieldEntry{id: 1},
+				"c": &queriedFieldEntry{id: 2},
+			},
+			expected: []*KeyValue{{0, "true"}, {1, "false"}, {2, "null"}},
 		},
 		{
 			structualIndex: &StructualIndex{
@@ -618,8 +625,8 @@ func TestStartParse(t *testing.T) {
 					bitsToUint32("00000000000000000100000000010000"),
 				},
 			},
-			queriedFieldTable: map[string]int{"a": 0, "b": 1},
-			expected:          []*KeyValue{{0, `"foo"`}, {1, `"bar\"\\"`}},
+			table:    queriedFieldTable{"a": &queriedFieldEntry{id: 0}, "b": &queriedFieldEntry{id: 1}},
+			expected: []*KeyValue{{0, `"foo"`}, {1, `"bar\"\\"`}},
 		},
 		{
 			structualIndex: &StructualIndex{
@@ -631,8 +638,10 @@ func TestStartParse(t *testing.T) {
 					bitsToUint32("00000000000000000000010000010000"),
 				},
 			},
-			queriedFieldTable: map[string]int{"a": -1, "a.b": 0},
-			expected:          []*KeyValue{},
+			table: queriedFieldTable{
+				"a": &queriedFieldEntry{children: queriedFieldTable{"b": &queriedFieldEntry{id: 0}}},
+			},
+			expected: []*KeyValue{},
 		},
 		{
 			structualIndex: &StructualIndex{
@@ -643,14 +652,14 @@ func TestStartParse(t *testing.T) {
 					bitsToUint32("00000000000000000000000000010000"),
 				},
 			},
-			queriedFieldTable: map[string]int{"a": 0},
-			expected:          []*KeyValue{},
+			table:    queriedFieldTable{"a": &queriedFieldEntry{id: 0}},
+			expected: []*KeyValue{},
 		},
 	}
 
 	for i, tt := range cases {
 		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
-			ch := startParse(tt.structualIndex, tt.queriedFieldTable)
+			ch := startParse(tt.structualIndex, tt.table)
 			actual := make([]*KeyValue, 0)
 			for {
 				kv, ok := <-ch
