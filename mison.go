@@ -481,8 +481,8 @@ func parseLiteral(json []byte, colon int) (string, error) {
 }
 
 func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue {
-	var parse func(*StructualIndex, queriedFieldTable, int, int, int, string, chan<- *KeyValue)
-	parse = func(index *StructualIndex, table queriedFieldTable, start, end, level int, namePrefix string, ch chan<- *KeyValue) {
+	var parse func(*StructualIndex, queriedFieldTable, int, int, int, chan<- *KeyValue)
+	parse = func(index *StructualIndex, table queriedFieldTable, start, end, level int, ch chan<- *KeyValue) {
 		json := index.json
 		colons := generateColonPositions(index.leveledColonBitmaps, start, end, level)
 		for i, colon := range colons {
@@ -491,7 +491,6 @@ func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue
 				panic(fmt.Sprintf("%s (TODO: handling error during parsing)", err))
 			}
 
-			fullName := namePrefix + name
 			if entry, ok := table[name]; ok {
 				if entry.children == nil {
 					// field is atomic value
@@ -512,7 +511,7 @@ func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue
 					} else {
 						innerEnd = end - 1
 					}
-					parse(index, entry.children, colon+1, innerEnd, level+1, fullName+".", ch)
+					parse(index, entry.children, colon+1, innerEnd, level+1, ch)
 				}
 			}
 		}
@@ -520,7 +519,7 @@ func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue
 
 	ch := make(chan *KeyValue)
 	go func() {
-		parse(index, table, 0, len(index.json), 0, "", ch)
+		parse(index, table, 0, len(index.json), 0, ch)
 		close(ch)
 	}()
 
