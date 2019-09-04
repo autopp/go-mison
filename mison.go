@@ -448,6 +448,7 @@ func buildQueriedFieldTableOld(queriedFields []string) (map[string]int, int, err
 type KeyValue struct {
 	fieldID int
 	value   string
+	err     error
 }
 
 var errUnexpectedObject = errors.New("unexpected object")
@@ -488,7 +489,7 @@ func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue
 		for i, colon := range colons {
 			name, err := retrieveFieldName(json, index.stringMaskBitmap, colon)
 			if err != nil {
-				panic(fmt.Sprintf("%s (TODO: handling error during parsing)", err))
+				ch <- &KeyValue{err: err}
 			}
 
 			if entry, ok := table[name]; ok {
@@ -499,7 +500,7 @@ func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue
 					if err == errUnexpectedObject {
 						// skip
 					} else if err != nil {
-						panic(err)
+						ch <- &KeyValue{err: err}
 					} else {
 						ch <- &KeyValue{fieldID: entry.id, value: v}
 					}
