@@ -535,6 +535,13 @@ func TestBuildQueriedFieldTable(t *testing.T) {
 				"jkl": &queriedFieldEntry{id: 2}},
 			level: 2,
 		},
+		{
+			queriedFields: []string{`abc\.\\.def`},
+			table: queriedFieldTable{
+				"abc.": &queriedFieldEntry{children: queriedFieldTable{"def": &queriedFieldEntry{id: 0}}},
+			},
+			level: 2,
+		},
 	}
 
 	for i, tt := range cases {
