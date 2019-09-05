@@ -420,31 +420,6 @@ func buildQueriedFieldTable(queriedFields []string) (queriedFieldTable, int, err
 	return t, level, nil
 }
 
-func buildQueriedFieldTableOld(queriedFields []string) (map[string]int, int, error) {
-	t := make(map[string]int)
-	level := 1
-	for i, field := range queriedFields {
-		if _, ok := t[field]; ok {
-			return nil, 0, fmt.Errorf("duplicated field %q", field)
-		}
-		keys := strings.Split(field, ".")
-		n := len(keys)
-		for j := 1; j <= n-1; j++ {
-			key := strings.Join(keys[0:j], ".")
-			if v, ok := t[key]; ok && v >= 0 {
-				return nil, 0, fmt.Errorf("duplicated field %q and %q", key, field)
-			}
-			t[key] = -1
-		}
-		t[field] = i
-		if n > level {
-			level = n
-		}
-	}
-
-	return t, level, nil
-}
-
 type KeyValue struct {
 	fieldID int
 	value   string
