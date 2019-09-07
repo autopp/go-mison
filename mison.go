@@ -379,7 +379,7 @@ func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField, fu
 	maxLevel := level
 	if strings.ContainsRune(queriedField, '.') {
 		splited := strings.SplitN(queriedField, ".", 2)
-		parent := splited[0]
+		parent := strings.ReplaceAll(splited[0], `\\`, `\`)
 		child := splited[1]
 
 		if _, ok := t[parent]; !ok {
