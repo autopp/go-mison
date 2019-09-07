@@ -545,7 +545,7 @@ func TestBuildQueriedFieldTable(t *testing.T) {
 		{
 			queriedFields: []string{`abc\\.def`},
 			table: queriedFieldTable{
-				"abc": &queriedFieldEntry{children: queriedFieldTable{"def": &queriedFieldEntry{id: 0}}},
+				`abc\`: &queriedFieldEntry{children: queriedFieldTable{"def": &queriedFieldEntry{id: 0}}},
 			},
 			level: 2,
 		},
