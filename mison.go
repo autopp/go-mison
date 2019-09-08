@@ -375,6 +375,26 @@ type queriedFieldEntry struct {
 	children queriedFieldTable
 }
 
+func findStructualDot(queriedField string) int {
+	for i, c := range queriedField {
+		if c == '.' {
+			escaped := false
+			for j := i - 1; j >= 0; j-- {
+				if queriedField[j] == '\\' {
+					escaped = !escaped
+				} else {
+					break
+				}
+			}
+			if !escaped {
+				return i
+			}
+		}
+	}
+
+	return -1
+}
+
 func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField, fullField string, nextID int, level int) (int, error) {
 	maxLevel := level
 	if strings.ContainsRune(queriedField, '.') {
