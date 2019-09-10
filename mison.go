@@ -7,7 +7,6 @@ import (
 	"math/bits"
 	"regexp"
 	"strconv"
-	"strings"
 )
 
 type StructualIndex struct {
@@ -397,10 +396,10 @@ func findStructualDot(queriedField string) int {
 
 func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField, fullField string, nextID int, level int) (int, error) {
 	maxLevel := level
-	if strings.ContainsRune(queriedField, '.') {
-		splited := strings.SplitN(queriedField, ".", 2)
-		parent := strings.ReplaceAll(splited[0], `\\`, `\`)
-		child := splited[1]
+	r := regexp.MustCompile(`\\(\.|\\)`)
+	if dot := findStructualDot(queriedField); dot >= 0 {
+		parent := r.ReplaceAllString(queriedField[0:dot], `$1`)
+		child := queriedField[dot+1:]
 
 		if _, ok := t[parent]; !ok {
 			t[parent] = &queriedFieldEntry{children: make(queriedFieldTable)}
@@ -415,6 +414,7 @@ func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField, fu
 			maxLevel = l
 		}
 	} else {
+		queriedField = r.ReplaceAllString(queriedField, `$1`)
 		if _, ok := t[queriedField]; ok {
 			return -1, fmt.Errorf("duplicated field %q", fullField)
 		}
