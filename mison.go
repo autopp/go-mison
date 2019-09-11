@@ -396,7 +396,7 @@ func findStructualDot(queriedField string) int {
 
 func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField, fullField string, nextID int, level int) (int, error) {
 	maxLevel := level
-	r := regexp.MustCompile(`\\(\.|\\)`)
+	r := regexp.MustCompile(`\\(.)`)
 	if dot := findStructualDot(queriedField); dot >= 0 {
 		parent := r.ReplaceAllString(queriedField[0:dot], `$1`)
 		child := queriedField[dot+1:]
