@@ -267,7 +267,7 @@ func buildLeveledColonBitmaps(bitmaps *structualCharacterBitmaps, stringMaskBitm
 				j, mLeftBit, err = stack.pop()
 				if err != nil {
 					offset := bits.LeadingZeros32(mRightBit)
-					return nil, fmt.Errorf("unexpected right bracement is found at position %d", i*32+32-offset)
+					return nil, fmt.Errorf("unexpected right curry blace is found at position %d", i*32+32-offset)
 				}
 				if stack.sp > 0 && stack.sp <= level {
 					if i == j {
