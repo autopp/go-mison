@@ -441,9 +441,9 @@ func buildQueriedFieldTable(queriedFields []string) (queriedFieldTable, int, err
 }
 
 type KeyValue struct {
-	fieldID int
-	value   string
-	err     error
+	FieldID int
+	Value   string
+	Err     error
 }
 
 var errUnexpectedObject = errors.New("unexpected object")
@@ -484,7 +484,7 @@ func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue
 		for i, colon := range colons {
 			name, err := retrieveFieldName(json, index.stringMaskBitmap, colon)
 			if err != nil {
-				ch <- &KeyValue{err: err}
+				ch <- &KeyValue{Err: err}
 			}
 
 			if entry, ok := table[name]; ok {
@@ -495,9 +495,9 @@ func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue
 					if err == errUnexpectedObject {
 						// skip
 					} else if err != nil {
-						ch <- &KeyValue{err: err}
+						ch <- &KeyValue{Err: err}
 					} else {
-						ch <- &KeyValue{fieldID: entry.id, value: v}
+						ch <- &KeyValue{FieldID: entry.id, Value: v}
 					}
 				} else {
 					// field is objetct value
