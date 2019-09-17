@@ -440,10 +440,20 @@ func buildQueriedFieldTable(queriedFields []string) (queriedFieldTable, int, err
 	return t, level, nil
 }
 
+type JsonType int
+
+const (
+	JsonNull JsonType = iota + 1
+	JsonBool
+	JsonNumber
+	JsonString
+)
+
 type KeyValue struct {
 	FieldID int
 	Value   string
 	Err     error
+	Type    JsonType
 }
 
 var errUnexpectedObject = errors.New("unexpected object")
