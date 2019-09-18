@@ -440,19 +440,19 @@ func buildQueriedFieldTable(queriedFields []string) (queriedFieldTable, int, err
 	return t, level, nil
 }
 
-type JsonType int
+type JSONType int
 
 const (
-	JsonNull JsonType = iota + 1
-	JsonBool
-	JsonNumber
-	JsonString
+	JSONNull JSONType = iota + 1
+	JSONBool
+	JSONNumber
+	JSONString
 )
 
 type KeyValue struct {
 	FieldID int
 	Value   string
-	Type    JsonType
+	Type    JSONType
 	Err     error
 }
 
