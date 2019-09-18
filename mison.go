@@ -452,8 +452,8 @@ const (
 type KeyValue struct {
 	FieldID int
 	Value   string
-	Err     error
 	Type    JsonType
+	Err     error
 }
 
 var errUnexpectedObject = errors.New("unexpected object")
