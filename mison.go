@@ -443,7 +443,8 @@ func buildQueriedFieldTable(queriedFields []string) (queriedFieldTable, int, err
 type JSONType int
 
 const (
-	JSONNull JSONType = iota + 1
+	JSONUnknown JSONType = iota
+	JSONNull
 	JSONBool
 	JSONNumber
 	JSONString
@@ -458,7 +459,7 @@ type KeyValue struct {
 
 var errUnexpectedObject = errors.New("unexpected object")
 
-func parseLiteral(json []byte, colon int) (string, error) {
+func parseLiteral(json []byte, colon int) (string, JSONType, error) {
 	i := colon + 1
 	size := len(json)
 	// skip blanks
@@ -469,21 +470,21 @@ func parseLiteral(json []byte, colon int) (string, error) {
 	}
 
 	if i == size {
-		return "", errors.New("value is not found")
+		return "", JSONUnknown, errors.New("value is not found")
 	}
 
 	if json[i] == '{' {
-		return "", errUnexpectedObject
+		return "", JSONUnknown, errUnexpectedObject
 	}
 
 	// Now parse literal
 	r := regexp.MustCompile(`\A(true|false|null|[0-9]+(\.[0-9]+)?|"([^\\\n"]|\\[\\"])*")`)
 	literal := r.Find(json[i:size])
 	if literal == nil {
-		return "", fmt.Errorf("value is not found at %d", i)
+		return "", JSONUnknown, fmt.Errorf("value is not found at %d", i)
 	}
 
-	return string(literal), nil
+	return string(literal), JSONUnknown, nil
 }
 
 func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue {
@@ -501,13 +502,13 @@ func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue
 				if entry.children == nil {
 					// field is atomic value
 					// parse value
-					v, err := parseLiteral(index.json, colon)
+					v, t, err := parseLiteral(index.json, colon)
 					if err == errUnexpectedObject {
 						// skip
 					} else if err != nil {
 						ch <- &KeyValue{Err: err}
 					} else {
-						ch <- &KeyValue{FieldID: entry.id, Value: v}
+						ch <- &KeyValue{FieldID: entry.id, Type: t, Value: v}
 					}
 				} else {
 					// field is objetct value
