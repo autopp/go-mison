@@ -484,7 +484,19 @@ func parseLiteral(json []byte, colon int) (string, JSONType, error) {
 		return "", JSONUnknown, fmt.Errorf("value is not found at %d", i)
 	}
 
-	return string(literal), JSONUnknown, nil
+	var t JSONType
+	switch literal[0] {
+	case 't', 'f':
+		t = JSONBool
+	case 'n':
+		t = JSONNull
+	case '"':
+		t = JSONString
+	default:
+		t = JSONNumber
+	}
+
+	return string(literal), t, nil
 }
 
 func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue {
