@@ -473,7 +473,7 @@ func parseLiteral(json []byte, colon int) (string, JSONType, error) {
 		return "", JSONUnknown, errors.New("value is not found")
 	}
 
-	if json[i] == '{' {
+	if json[i] == '{' || json[i] == '[' {
 		return "", JSONUnknown, errUnexpectedObject
 	}
 
