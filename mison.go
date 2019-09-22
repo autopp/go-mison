@@ -458,6 +458,7 @@ type KeyValue struct {
 }
 
 var errUnexpectedObject = errors.New("unexpected object")
+var errUnexpectedArray = errors.New("unexpected array")
 
 func parseLiteral(json []byte, colon int) (string, JSONType, error) {
 	i := colon + 1
@@ -473,8 +474,10 @@ func parseLiteral(json []byte, colon int) (string, JSONType, error) {
 		return "", JSONUnknown, errors.New("value is not found")
 	}
 
-	if json[i] == '{' || json[i] == '[' {
+	if json[i] == '{' {
 		return "", JSONUnknown, errUnexpectedObject
+	} else if json[i] == '[' {
+		return "", JSONUnknown, errUnexpectedArray
 	}
 
 	// Now parse literal
@@ -515,7 +518,7 @@ func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue
 					// field is atomic value
 					// parse value
 					v, t, err := parseLiteral(index.json, colon)
-					if err == errUnexpectedObject {
+					if err == errUnexpectedObject || err == errUnexpectedArray {
 						// skip
 					} else if err != nil {
 						ch <- &KeyValue{Err: err}
