@@ -440,16 +440,25 @@ func buildQueriedFieldTable(queriedFields []string) (queriedFieldTable, int, err
 	return t, level, nil
 }
 
+/*
+JSONType represents type of the field
+*/
 type JSONType int
 
 const (
+	// JSONUnknown is initial value of JSONType and represnents no value
 	JSONUnknown JSONType = iota
+	// JSONNull represents null in JSON
 	JSONNull
+	// JSONBool represents boolean value in JSON
 	JSONBool
+	// JSONNumber represents number value in JSON
 	JSONNumber
+	// JSONString represents string value in JSON
 	JSONString
 )
 
+// KeyValue represents found key-value in JSON
 type KeyValue struct {
 	FieldID int
 	Value   string
@@ -548,6 +557,7 @@ func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue
 	return ch
 }
 
+// Parser is stream provider for specified queried fields
 type Parser struct {
 	queriedFieldTable queriedFieldTable
 	level             int
