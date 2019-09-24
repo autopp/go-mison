@@ -460,10 +460,10 @@ const (
 
 // KeyValue represents found key-value in JSON
 type KeyValue struct {
-	FieldID int
-	Value   string
-	Type    JSONType
-	Err     error
+	FieldID  int
+	RawValue string
+	Type     JSONType
+	Err      error
 }
 
 var errUnexpectedObject = errors.New("unexpected object")
@@ -532,7 +532,7 @@ func startParse(index *structualIndex, table queriedFieldTable) <-chan *KeyValue
 					} else if err != nil {
 						ch <- &KeyValue{Err: err}
 					} else {
-						ch <- &KeyValue{FieldID: entry.id, Type: t, Value: v}
+						ch <- &KeyValue{FieldID: entry.id, Type: t, RawValue: v}
 					}
 				} else {
 					// field is objetct value
