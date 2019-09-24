@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-type StructualIndex struct {
+type structualIndex struct {
 	json                []byte
 	level               int
 	stringMaskBitmap    []uint32
@@ -306,7 +306,7 @@ func generateColonPositions(index [][]uint32, start, end, level int) []int {
 	return colons
 }
 
-func buildStructualIndex(json []byte, level int) (*StructualIndex, error) {
+func buildStructualIndex(json []byte, level int) (*structualIndex, error) {
 	charactersBitmaps := buildStructualCharacterBitmaps(json)
 	quoteBitmap := buildStructualQuoteBitmap(charactersBitmaps)
 	stringMaskBitmap := buildStringMaskBitmap(quoteBitmap)
@@ -316,7 +316,7 @@ func buildStructualIndex(json []byte, level int) (*StructualIndex, error) {
 		return nil, err
 	}
 
-	return &StructualIndex{
+	return &structualIndex{
 		json:                json,
 		level:               level,
 		stringMaskBitmap:    stringMaskBitmap,
@@ -511,9 +511,9 @@ func parseLiteral(json []byte, colon int) (string, JSONType, error) {
 	return string(literal), t, nil
 }
 
-func startParse(index *StructualIndex, table queriedFieldTable) <-chan *KeyValue {
-	var parse func(*StructualIndex, queriedFieldTable, int, int, int, chan<- *KeyValue)
-	parse = func(index *StructualIndex, table queriedFieldTable, start, end, level int, ch chan<- *KeyValue) {
+func startParse(index *structualIndex, table queriedFieldTable) <-chan *KeyValue {
+	var parse func(*structualIndex, queriedFieldTable, int, int, int, chan<- *KeyValue)
+	parse = func(index *structualIndex, table queriedFieldTable, start, end, level int, ch chan<- *KeyValue) {
 		json := index.json
 		colons := generateColonPositions(index.leveledColonBitmaps, start, end, level)
 		for i, colon := range colons {

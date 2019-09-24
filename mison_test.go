@@ -437,7 +437,7 @@ func TestBuildStructualIndex(t *testing.T) {
 		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
 			actual, err := buildStructualIndex([]byte(tt.input), tt.level)
 			if assert.NoError(t, err) {
-				expected := &StructualIndex{
+				expected := &structualIndex{
 					json:                []byte(tt.input),
 					level:               tt.level,
 					stringMaskBitmap:    tt.stringMaskBitmap,
@@ -582,12 +582,12 @@ func TestBuildQueriedFieldTable(t *testing.T) {
 
 func TestStartParse(t *testing.T) {
 	cases := []struct {
-		structualIndex *StructualIndex
+		structualIndex *structualIndex
 		table          queriedFieldTable
 		expected       []*KeyValue
 	}{
 		{
-			structualIndex: &StructualIndex{
+			structualIndex: &structualIndex{
 				json:             []byte(`{"b":2,"c":3,"a":1,}`),
 				level:            1,
 				stringMaskBitmap: bitsToUint32("00000000000000001100001100001100"),
@@ -599,7 +599,7 @@ func TestStartParse(t *testing.T) {
 			expected: []*KeyValue{{1, "3", JSONNumber, nil}, {0, "1", JSONNumber, nil}},
 		},
 		{
-			structualIndex: &StructualIndex{
+			structualIndex: &structualIndex{
 				json:             []byte(`{"a":1,"b":{"c":2}}`),
 				level:            2,
 				stringMaskBitmap: bitsToUint32("00000000000000000110001100001100"),
@@ -615,7 +615,7 @@ func TestStartParse(t *testing.T) {
 			expected: []*KeyValue{{0, "1", JSONNumber, nil}, {1, "2", JSONNumber, nil}},
 		},
 		{
-			structualIndex: &StructualIndex{
+			structualIndex: &structualIndex{
 				json:             []byte(`{"a":true,"b":false,"c":null}`),
 				level:            1,
 				stringMaskBitmap: bitsToUint32("00000000011000000001100000001100"),
@@ -631,7 +631,7 @@ func TestStartParse(t *testing.T) {
 			expected: []*KeyValue{{0, "true", JSONBool, nil}, {1, "false", JSONBool, nil}, {2, "null", JSONNull, nil}},
 		},
 		{
-			structualIndex: &StructualIndex{
+			structualIndex: &structualIndex{
 				json:             []byte(`{"a":"foo","b":"bar\"\\"}`),
 				level:            1,
 				stringMaskBitmap: bitsToUint32("00000000111111110011001111001100"),
@@ -643,7 +643,7 @@ func TestStartParse(t *testing.T) {
 			expected: []*KeyValue{{0, `"foo"`, JSONString, nil}, {1, `"bar\"\\"`, JSONString, nil}},
 		},
 		{
-			structualIndex: &StructualIndex{
+			structualIndex: &structualIndex{
 				json:             []byte(`{"a":0,"b":1}`),
 				level:            2,
 				stringMaskBitmap: bitsToUint32("00000000000000000000001100001100"),
@@ -658,7 +658,7 @@ func TestStartParse(t *testing.T) {
 			expected: []*KeyValue{},
 		},
 		{
-			structualIndex: &StructualIndex{
+			structualIndex: &structualIndex{
 				json:             []byte(`{"a":{"b":0}}`),
 				level:            1,
 				stringMaskBitmap: bitsToUint32("00000000000000000000000110001100"),
