@@ -596,7 +596,7 @@ func TestStartParse(t *testing.T) {
 				},
 			},
 			table:    queriedFieldTable{"a": &queriedFieldEntry{id: 0}, "c": &queriedFieldEntry{id: 1}},
-			expected: []*KeyValue{{1, "3", JSONNumber, nil}, {0, "1", JSONNumber, nil}},
+			expected: []*KeyValue{{1, 3.0, "3", JSONNumber, nil}, {0, 1.0, "1", JSONNumber, nil}},
 		},
 		{
 			structualIndex: &structualIndex{
@@ -612,7 +612,7 @@ func TestStartParse(t *testing.T) {
 				"a": &queriedFieldEntry{id: 0},
 				"b": &queriedFieldEntry{children: queriedFieldTable{"c": &queriedFieldEntry{id: 1}}},
 			},
-			expected: []*KeyValue{{0, "1", JSONNumber, nil}, {1, "2", JSONNumber, nil}},
+			expected: []*KeyValue{{0, 1.0, "1", JSONNumber, nil}, {1, 2.0, "2", JSONNumber, nil}},
 		},
 		{
 			structualIndex: &structualIndex{
@@ -628,7 +628,7 @@ func TestStartParse(t *testing.T) {
 				"b": &queriedFieldEntry{id: 1},
 				"c": &queriedFieldEntry{id: 2},
 			},
-			expected: []*KeyValue{{0, "true", JSONBool, nil}, {1, "false", JSONBool, nil}, {2, "null", JSONNull, nil}},
+			expected: []*KeyValue{{0, true, "true", JSONBool, nil}, {1, false, "false", JSONBool, nil}, {2, nil, "null", JSONNull, nil}},
 		},
 		{
 			structualIndex: &structualIndex{
@@ -640,7 +640,7 @@ func TestStartParse(t *testing.T) {
 				},
 			},
 			table:    queriedFieldTable{"a": &queriedFieldEntry{id: 0}, "b": &queriedFieldEntry{id: 1}},
-			expected: []*KeyValue{{0, `"foo"`, JSONString, nil}, {1, `"bar\"\\"`, JSONString, nil}},
+			expected: []*KeyValue{{0, "foo", `"foo"`, JSONString, nil}, {1, "bar", `"bar\"\\"`, JSONString, nil}},
 		},
 		{
 			structualIndex: &structualIndex{
@@ -696,22 +696,22 @@ func TestParserParse(t *testing.T) {
 		{
 			json:          []byte(`{"b":2,"c":3,"a":1,}`),
 			queriedFields: []string{"a", "c"},
-			expected:      []*KeyValue{{1, "3", JSONNumber, nil}, {0, "1", JSONNumber, nil}},
+			expected:      []*KeyValue{{1, 3.0, "3", JSONNumber, nil}, {0, 1.0, "1", JSONNumber, nil}},
 		},
 		{
 			json:          []byte(`{"a":1.0,"b":{"c":2}}`),
 			queriedFields: []string{"a", "b.c"},
-			expected:      []*KeyValue{{0, "1.0", JSONNumber, nil}, {1, "2", JSONNumber, nil}},
+			expected:      []*KeyValue{{0, 1.0, "1.0", JSONNumber, nil}, {1, 2.0, "2", JSONNumber, nil}},
 		},
 		{
 			json:          []byte(`{"a":true,"b":false,"c":null}`),
 			queriedFields: []string{"a", "b", "c"},
-			expected:      []*KeyValue{{0, "true", JSONBool, nil}, {1, "false", JSONBool, nil}, {2, "null", JSONNull, nil}},
+			expected:      []*KeyValue{{0, true, "true", JSONBool, nil}, {1, false, "false", JSONBool, nil}, {2, nil, "null", JSONNull, nil}},
 		},
 		{
 			json:          []byte(`{"a":"foo","b":"bar\"\\"}`),
 			queriedFields: []string{"a", "b"},
-			expected:      []*KeyValue{{0, `"foo"`, JSONString, nil}, {1, `"bar\"\\"`, JSONString, nil}},
+			expected:      []*KeyValue{{0, "foo", `"foo"`, JSONString, nil}, {1, "bar", `"bar\"\\"`, JSONString, nil}},
 		},
 		{
 			json:          []byte(`{"a":0,"b":1}`),

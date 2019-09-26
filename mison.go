@@ -461,6 +461,7 @@ const (
 // KeyValue represents found key-value in JSON
 type KeyValue struct {
 	FieldID  int
+	Value    interface{}
 	RawValue string
 	Type     JSONType
 	Err      error
@@ -469,7 +470,7 @@ type KeyValue struct {
 var errUnexpectedObject = errors.New("unexpected object")
 var errUnexpectedArray = errors.New("unexpected array")
 
-func parseLiteral(json []byte, colon int) (string, JSONType, error) {
+func parseLiteral(json []byte, colon int) (interface{}, string, JSONType, error) {
 	i := colon + 1
 	size := len(json)
 	// skip blanks
@@ -480,35 +481,40 @@ func parseLiteral(json []byte, colon int) (string, JSONType, error) {
 	}
 
 	if i == size {
-		return "", JSONUnknown, errors.New("value is not found")
+		return nil, "", JSONUnknown, errors.New("value is not found")
 	}
 
 	if json[i] == '{' {
-		return "", JSONUnknown, errUnexpectedObject
+		return nil, "", JSONUnknown, errUnexpectedObject
 	} else if json[i] == '[' {
-		return "", JSONUnknown, errUnexpectedArray
+		return nil, "", JSONUnknown, errUnexpectedArray
 	}
 
 	// Now parse literal
 	r := regexp.MustCompile(`\A(true|false|null|[0-9]+(\.[0-9]+)?|"([^\\\n"]|\\[\\"])*")`)
 	literal := r.Find(json[i:size])
 	if literal == nil {
-		return "", JSONUnknown, fmt.Errorf("value is not found at %d", i)
+		return nil, "", JSONUnknown, fmt.Errorf("value is not found at %d", i)
 	}
 
 	var t JSONType
+	var v interface{}
 	switch literal[0] {
 	case 't', 'f':
 		t = JSONBool
+		v = literal[0] == 't'
 	case 'n':
 		t = JSONNull
+		v = nil
 	case '"':
 		t = JSONString
+		v = string(literal[1 : len(literal)-1])
 	default:
 		t = JSONNumber
+		v, _ = strconv.ParseFloat(string(literal), 64)
 	}
 
-	return string(literal), t, nil
+	return v, string(literal), t, nil
 }
 
 func startParse(index *structualIndex, table queriedFieldTable) <-chan *KeyValue {
@@ -526,13 +532,13 @@ func startParse(index *structualIndex, table queriedFieldTable) <-chan *KeyValue
 				if entry.children == nil {
 					// field is atomic value
 					// parse value
-					v, t, err := parseLiteral(index.json, colon)
+					v, rv, t, err := parseLiteral(index.json, colon)
 					if err == errUnexpectedObject || err == errUnexpectedArray {
 						// skip
 					} else if err != nil {
 						ch <- &KeyValue{Err: err}
 					} else {
-						ch <- &KeyValue{FieldID: entry.id, Type: t, RawValue: v}
+						ch <- &KeyValue{FieldID: entry.id, Type: t, Value: v, RawValue: rv}
 					}
 				} else {
 					// field is objetct value
