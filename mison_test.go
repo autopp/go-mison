@@ -640,7 +640,7 @@ func TestStartParse(t *testing.T) {
 				},
 			},
 			table:    queriedFieldTable{"a": &queriedFieldEntry{id: 0}, "b": &queriedFieldEntry{id: 1}},
-			expected: []*KeyValue{{0, "foo", `"foo"`, JSONString, nil}, {1, "bar", `"bar\"\\"`, JSONString, nil}},
+			expected: []*KeyValue{{0, "foo", `"foo"`, JSONString, nil}, {1, `bar"\`, `"bar\"\\"`, JSONString, nil}},
 		},
 		{
 			structualIndex: &structualIndex{
@@ -711,7 +711,7 @@ func TestParserParse(t *testing.T) {
 		{
 			json:          []byte(`{"a":"foo","b":"bar\"\\"}`),
 			queriedFields: []string{"a", "b"},
-			expected:      []*KeyValue{{0, "foo", `"foo"`, JSONString, nil}, {1, "bar", `"bar\"\\"`, JSONString, nil}},
+			expected:      []*KeyValue{{0, "foo", `"foo"`, JSONString, nil}, {1, `bar"\`, `"bar\"\\"`, JSONString, nil}},
 		},
 		{
 			json:          []byte(`{"a":0,"b":1}`),

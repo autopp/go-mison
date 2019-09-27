@@ -508,7 +508,8 @@ func parseLiteral(json []byte, colon int) (interface{}, string, JSONType, error)
 		v = nil
 	case '"':
 		t = JSONString
-		v = string(literal[1 : len(literal)-1])
+		r := regexp.MustCompile(`\\(.)`)
+		v = r.ReplaceAllString(string(literal[1:len(literal)-1]), "$1")
 	default:
 		t = JSONNumber
 		v, _ = strconv.ParseFloat(string(literal), 64)
