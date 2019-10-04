@@ -491,7 +491,7 @@ func parseLiteral(json []byte, colon int) (interface{}, string, JSONType, error)
 	}
 
 	// Now parse literal
-	r := regexp.MustCompile(`\A(true|false|null|-?(0|[0-9]+)(\.[0-9]+)?|"([^\\\n"]|\\[\\"])*")`)
+	r := regexp.MustCompile(`\A(true|false|null|-?(0|[0-9]+)(\.[0-9]+)?|"([^\\\n"]|\\[\\"n])*")`)
 	literal := r.Find(json[i:size])
 	if literal == nil {
 		return nil, "", JSONUnknown, fmt.Errorf("value is not found at %d", i)
@@ -508,8 +508,11 @@ func parseLiteral(json []byte, colon int) (interface{}, string, JSONType, error)
 		v = nil
 	case '"':
 		t = JSONString
+		body := literal[1 : len(literal)-1]
+		nlr := regexp.MustCompile(`\\n`)
+		body = []byte(nlr.ReplaceAllString(string(body), "\n"))
 		r := regexp.MustCompile(`\\(.)`)
-		v = r.ReplaceAllString(string(literal[1:len(literal)-1]), "$1")
+		v = r.ReplaceAllString(string(body), "$1")
 	default:
 		t = JSONNumber
 		var err error

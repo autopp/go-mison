@@ -711,7 +711,7 @@ func TestParserParse(t *testing.T) {
 		{
 			json:          []byte(`{"a":"foo","b":"bar\"\\\n"}`),
 			queriedFields: []string{"a", "b"},
-			expected:      []*KeyValue{{0, "foo", `"foo"`, JSONString, nil}, {1, "bar\"\\\n", `"bar\"\\"\n`, JSONString, nil}},
+			expected:      []*KeyValue{{0, "foo", `"foo"`, JSONString, nil}, {1, "bar\"\\\n", `"bar\"\\\n"`, JSONString, nil}},
 		},
 		{
 			json:          []byte(`{"a":0,"b":1}`),
