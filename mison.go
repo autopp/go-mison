@@ -508,11 +508,29 @@ func parseLiteral(json []byte, colon int) (interface{}, string, JSONType, error)
 		v = nil
 	case '"':
 		t = JSONString
+		n := 0
+		buf := make([]byte, len(literal)-2)
 		body := literal[1 : len(literal)-1]
-		nlr := regexp.MustCompile(`\\n`)
-		body = []byte(nlr.ReplaceAllString(string(body), "\n"))
-		r := regexp.MustCompile(`\\(.)`)
-		v = r.ReplaceAllString(string(body), "$1")
+		for i := 0; i < len(body); i++ {
+			ch := body[i]
+			if ch == '\\' {
+				next := body[i+1]
+				switch next {
+				case '\\':
+					buf[n] = '\\'
+				case 'n':
+					buf[n] = '\n'
+				default:
+					buf[n] = next
+				}
+				i++
+			} else {
+				buf[n] = body[i]
+			}
+			n++
+		}
+		buf = buf[0:n]
+		v = r.ReplaceAllString(string(buf), "$1")
 	default:
 		t = JSONNumber
 		var err error
