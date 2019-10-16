@@ -540,7 +540,7 @@ func parseLiteral(json []byte, colon int) (interface{}, string, JSONType, error)
 			n++
 		}
 		buf = buf[0:n]
-		v = r.ReplaceAllString(string(buf), "$1")
+		v = string(buf)
 	default:
 		t = JSONNumber
 		var err error
