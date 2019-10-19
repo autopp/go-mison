@@ -605,6 +605,7 @@ type Parser struct {
 	level             int
 }
 
+// NewParser creates and initializes a new Parser for given queried fields
 func NewParser(queriedFields []string) (*Parser, error) {
 	t, level, err := buildQueriedFieldTable(queriedFields)
 	if err != nil {
@@ -613,6 +614,7 @@ func NewParser(queriedFields []string) (*Parser, error) {
 	return &Parser{queriedFieldTable: t, level: level}, nil
 }
 
+// Parse starts parsing given JSON and returns channel for found key/value
 func (p *Parser) Parse(json []byte) (<-chan *KeyValue, error) {
 	index, err := buildStructualIndex(json, p.level)
 	if err != nil {
