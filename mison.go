@@ -614,7 +614,7 @@ func NewParser(queriedFields []string) (*Parser, error) {
 	return &Parser{queriedFieldTable: t, level: level}, nil
 }
 
-// Parse starts parsing given JSON and returns channel for found key/value
+// Parse starts parsing given JSON on goroutine and returns channel for found key/value
 func (p *Parser) Parse(json []byte) (<-chan *KeyValue, error) {
 	index, err := buildStructualIndex(json, p.level)
 	if err != nil {
@@ -622,4 +622,14 @@ func (p *Parser) Parse(json []byte) (<-chan *KeyValue, error) {
 	}
 
 	return startParse(index, p.queriedFieldTable), nil
+}
+
+// ParserState is state of parsing the json
+type ParserState struct {
+	json []byte
+}
+
+// StartParse returns a new ParserState
+func (p *Parser) StartParse(json []byte) (*ParserState, error) {
+	return &ParserState{json: json}, nil
 }
