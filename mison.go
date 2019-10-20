@@ -626,10 +626,14 @@ func (p *Parser) Parse(json []byte) (<-chan *KeyValue, error) {
 
 // ParserState is state of parsing the json
 type ParserState struct {
-	json []byte
+	index *structualIndex
 }
 
 // StartParse returns a new ParserState
 func (p *Parser) StartParse(json []byte) (*ParserState, error) {
-	return &ParserState{json: json}, nil
+	index, err := buildStructualIndex(json, p.level)
+	if err != nil {
+		return nil, err
+	}
+	return &ParserState{index: index}, nil
 }
