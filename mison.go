@@ -637,3 +637,8 @@ func (p *Parser) StartParse(json []byte) (*ParserState, error) {
 	}
 	return &ParserState{index: index}, nil
 }
+
+// Next returns next key/value
+func (ps *ParserState) Next() *KeyValue {
+	return nil
+}
