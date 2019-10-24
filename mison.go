@@ -628,6 +628,16 @@ func (p *Parser) Parse(json []byte) (<-chan *KeyValue, error) {
 type ParserState struct {
 	p     *Parser
 	index *structualIndex
+	stack []parserStateStack
+	sp    int
+}
+
+type parserStateStack struct {
+	start        int
+	end          int
+	level        int
+	colons       []int
+	currentColon int
 }
 
 // StartParse returns a new ParserState
@@ -636,7 +646,7 @@ func (p *Parser) StartParse(json []byte) (*ParserState, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ParserState{p: p, index: index}, nil
+	return &ParserState{p: p, index: index, stack: make([]parserStateStack, p.level), sp: -1}, nil
 }
 
 // Next returns next key/value
