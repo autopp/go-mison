@@ -638,6 +638,7 @@ type parserStateStack struct {
 	level        int
 	colons       []int
 	currentColon int
+	table        queriedFieldTable
 }
 
 // StartParse returns a new ParserState
@@ -646,10 +647,71 @@ func (p *Parser) StartParse(json []byte) (*ParserState, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &ParserState{p: p, index: index, stack: make([]parserStateStack, p.level), sp: -1}, nil
+	stack := make([]parserStateStack, p.level)
+	stack[0].start = 0
+	stack[0].end = len(json)
+	stack[0].level = 0
+	stack[0].table = p.queriedFieldTable
+	return &ParserState{p: p, index: index, stack: stack, sp: 0}, nil
 }
 
 // Next returns next key/value
 func (ps *ParserState) Next() *KeyValue {
+	if ps.sp < 0 {
+		return nil
+	}
+
+	flame := &ps.stack[ps.sp]
+	if flame.colons == nil {
+		flame.colons = generateColonPositions(ps.index.leveledColonBitmaps, flame.start, flame.end, flame.level)
+		flame.currentColon = 0
+	} else if flame.currentColon == len(flame.colons) {
+		ps.sp--
+		if ps.sp < 0 {
+			return nil
+		}
+		flame = &ps.stack[ps.sp]
+	}
+
+	colon := flame.colons[flame.currentColon]
+	name, err := retrieveFieldName(ps.index.json, ps.index.stringMaskBitmap, colon)
+	if err != nil {
+		return &KeyValue{Err: err}
+	}
+
+	fmt.Println(flame.table)
+	if entry, ok := flame.table[name]; ok {
+		flame.currentColon++
+		if entry.children == nil {
+			// field is atomic value
+			// parse value
+			v, rv, t, err := parseLiteral(ps.index.json, flame.currentColon)
+			if err == errUnexpectedObject || err == errUnexpectedArray {
+				// skip
+			} else if err != nil {
+				return &KeyValue{Err: err}
+			} else {
+				return &KeyValue{FieldID: entry.id, Type: t, Value: v, RawValue: rv}
+			}
+		} else if flame.level+1 < ps.p.level {
+			// field is object value
+			var innerEnd int
+			if flame.currentColon < len(flame.colons)-1 {
+				innerEnd = flame.colons[flame.currentColon+1] - 1
+			} else {
+				innerEnd = flame.end - 1
+			}
+			// push new flame
+			ps.sp++
+			newFlame := &ps.stack[ps.sp]
+			newFlame.start = flame.currentColon + 1
+			newFlame.end = innerEnd
+			newFlame.level = flame.level + 1
+			newFlame.table = entry.children
+
+			return ps.Next()
+		}
+	}
+
 	return nil
 }
