@@ -665,7 +665,7 @@ func (ps *ParserState) Next() *KeyValue {
 	if flame.colons == nil {
 		flame.colons = generateColonPositions(ps.index.leveledColonBitmaps, flame.start, flame.end, flame.level)
 		flame.currentColon = 0
-	} else if flame.currentColon == len(flame.colons) {
+	} else if flame.currentColon >= len(flame.colons) {
 		ps.sp--
 		if ps.sp < 0 {
 			return nil
@@ -675,13 +675,13 @@ func (ps *ParserState) Next() *KeyValue {
 
 	colon := flame.colons[flame.currentColon]
 	name, err := retrieveFieldName(ps.index.json, ps.index.stringMaskBitmap, colon)
+	fmt.Printf("name : %q\n", name)
 	if err != nil {
 		return &KeyValue{Err: err}
 	}
 
-	fmt.Println(flame.table)
+	flame.currentColon++
 	if entry, ok := flame.table[name]; ok {
-		flame.currentColon++
 		if entry.children == nil {
 			// field is atomic value
 			// parse value
@@ -713,5 +713,5 @@ func (ps *ParserState) Next() *KeyValue {
 		}
 	}
 
-	return nil
+	return ps.Next()
 }
