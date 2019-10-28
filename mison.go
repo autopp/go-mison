@@ -675,7 +675,6 @@ func (ps *ParserState) Next() *KeyValue {
 
 	colon := flame.colons[flame.currentColon]
 	name, err := retrieveFieldName(ps.index.json, ps.index.stringMaskBitmap, colon)
-	fmt.Printf("name : %q\n", name)
 	if err != nil {
 		return &KeyValue{Err: err}
 	}
@@ -685,7 +684,7 @@ func (ps *ParserState) Next() *KeyValue {
 		if entry.children == nil {
 			// field is atomic value
 			// parse value
-			v, rv, t, err := parseLiteral(ps.index.json, flame.currentColon)
+			v, rv, t, err := parseLiteral(ps.index.json, colon)
 			if err == errUnexpectedObject || err == errUnexpectedArray {
 				// skip
 			} else if err != nil {
