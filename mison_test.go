@@ -795,7 +795,7 @@ func TestParserState(t *testing.T) {
 	}
 
 	for i, tt := range cases {
-		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
+		t.Run(fmt.Sprintf("case%d (%s,%s)", i, tt.json, tt.queriedFields), func(t *testing.T) {
 			p, err := NewParser(tt.queriedFields)
 			if assert.NoError(t, err) {
 				ps, err := p.StartParse(tt.json)
