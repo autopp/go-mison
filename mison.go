@@ -670,7 +670,7 @@ func (ps *ParserState) Next() *KeyValue {
 		if ps.sp < 0 {
 			return nil
 		}
-		flame = &ps.stack[ps.sp]
+		return ps.Next()
 	}
 
 	colon := flame.colons[flame.currentColon]
