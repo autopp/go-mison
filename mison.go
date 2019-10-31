@@ -658,7 +658,7 @@ func (p *Parser) StartParse(json []byte) (*ParserState, error) {
 // Next returns next key/value
 func (ps *ParserState) Next() *KeyValue {
 	if ps.sp < 0 {
-		return nil
+		return &KeyValue{Err: errors.New("already finished")}
 	}
 
 	flame := &ps.stack[ps.sp]
