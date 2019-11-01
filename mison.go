@@ -665,7 +665,12 @@ func (ps *ParserState) Next() *KeyValue {
 	if flame.colons == nil {
 		flame.colons = generateColonPositions(ps.index.leveledColonBitmaps, flame.start, flame.end, flame.level)
 		flame.currentColon = 0
-	} else if flame.currentColon >= len(flame.colons) {
+	} else {
+		flame.currentColon++
+	}
+
+	if flame.currentColon >= len(flame.colons) {
+		flame.colons = nil
 		ps.sp--
 		if ps.sp < 0 {
 			return nil
@@ -679,7 +684,6 @@ func (ps *ParserState) Next() *KeyValue {
 		return &KeyValue{Err: err}
 	}
 
-	flame.currentColon++
 	if entry, ok := flame.table[name]; ok {
 		if entry.children == nil {
 			// field is atomic value
@@ -703,7 +707,7 @@ func (ps *ParserState) Next() *KeyValue {
 			// push new flame
 			ps.sp++
 			newFlame := &ps.stack[ps.sp]
-			newFlame.start = flame.currentColon + 1
+			newFlame.start = colon + 1
 			newFlame.end = innerEnd
 			newFlame.level = flame.level + 1
 			newFlame.table = entry.children
