@@ -3,6 +3,7 @@ package mison
 import (
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"math/bits"
 	"regexp"
@@ -656,9 +657,9 @@ func (p *Parser) StartParse(json []byte) (*ParserState, error) {
 }
 
 // Next returns next key/value
-func (ps *ParserState) Next() *KeyValue {
+func (ps *ParserState) Next() (*KeyValue, error) {
 	if ps.sp < 0 {
-		return &KeyValue{Err: errors.New("already finished")}
+		return nil, errors.New("already finished")
 	}
 
 	flame := &ps.stack[ps.sp]
@@ -673,7 +674,7 @@ func (ps *ParserState) Next() *KeyValue {
 		flame.colons = nil
 		ps.sp--
 		if ps.sp < 0 {
-			return nil
+			return nil, io.EOF
 		}
 		return ps.Next()
 	}
@@ -681,7 +682,7 @@ func (ps *ParserState) Next() *KeyValue {
 	colon := flame.colons[flame.currentColon]
 	name, err := retrieveFieldName(ps.index.json, ps.index.stringMaskBitmap, colon)
 	if err != nil {
-		return &KeyValue{Err: err}
+		return nil, err
 	}
 
 	if entry, ok := flame.table[name]; ok {
@@ -692,9 +693,9 @@ func (ps *ParserState) Next() *KeyValue {
 			if err == errUnexpectedObject || err == errUnexpectedArray {
 				// skip
 			} else if err != nil {
-				return &KeyValue{Err: err}
+				return nil, err
 			} else {
-				return &KeyValue{FieldID: entry.id, Type: t, Value: v, RawValue: rv}
+				return &KeyValue{FieldID: entry.id, Type: t, Value: v, RawValue: rv}, nil
 			}
 		} else if flame.level+1 < ps.p.level {
 			// field is object value

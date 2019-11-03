@@ -2,6 +2,7 @@ package mison
 
 import (
 	"fmt"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -802,11 +803,12 @@ func TestParserState(t *testing.T) {
 				if assert.NoError(t, err) {
 					actual := make([]*KeyValue, 0)
 					for {
-						kv := ps.Next()
-						if kv == nil {
+						kv, err := ps.Next()
+						if err == io.EOF {
 							break
+						} else if assert.NoError(t, err) {
+							actual = append(actual, kv)
 						}
-						actual = append(actual, kv)
 					}
 					assert.Equal(t, tt.expected, actual)
 				}
