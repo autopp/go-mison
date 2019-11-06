@@ -554,52 +554,6 @@ func parseLiteral(json []byte, colon int) (interface{}, string, JSONType, error)
 	return v, string(literal), t, nil
 }
 
-func startParse(index *structualIndex, table queriedFieldTable) <-chan *KeyValue {
-	var parse func(*structualIndex, queriedFieldTable, int, int, int, chan<- *KeyValue)
-	parse = func(index *structualIndex, table queriedFieldTable, start, end, level int, ch chan<- *KeyValue) {
-		json := index.json
-		colons := generateColonPositions(index.leveledColonBitmaps, start, end, level)
-		for i, colon := range colons {
-			name, err := retrieveFieldName(json, index.stringMaskBitmap, colon)
-			if err != nil {
-				ch <- &KeyValue{Err: err}
-			}
-
-			if entry, ok := table[name]; ok {
-				if entry.children == nil {
-					// field is atomic value
-					// parse value
-					v, rv, t, err := parseLiteral(index.json, colon)
-					if err == errUnexpectedObject || err == errUnexpectedArray {
-						// skip
-					} else if err != nil {
-						ch <- &KeyValue{Err: err}
-					} else {
-						ch <- &KeyValue{FieldID: entry.id, Type: t, Value: v, RawValue: rv}
-					}
-				} else {
-					// field is objetct value
-					var innerEnd int
-					if i < len(colons)-1 {
-						innerEnd = colons[i+1] - 1
-					} else {
-						innerEnd = end - 1
-					}
-					parse(index, entry.children, colon+1, innerEnd, level+1, ch)
-				}
-			}
-		}
-	}
-
-	ch := make(chan *KeyValue)
-	go func() {
-		parse(index, table, 0, len(index.json), 0, ch)
-		close(ch)
-	}()
-
-	return ch
-}
-
 // Parser is stream provider for specified queried fields
 type Parser struct {
 	queriedFieldTable queriedFieldTable
@@ -613,16 +567,6 @@ func NewParser(queriedFields []string) (*Parser, error) {
 		return nil, err
 	}
 	return &Parser{queriedFieldTable: t, level: level}, nil
-}
-
-// Parse starts parsing given JSON on goroutine and returns channel for found key/value
-func (p *Parser) Parse(json []byte) (<-chan *KeyValue, error) {
-	index, err := buildStructualIndex(json, p.level)
-	if err != nil {
-		return nil, err
-	}
-
-	return startParse(index, p.queriedFieldTable), nil
 }
 
 // ParserState is state of parsing the json
