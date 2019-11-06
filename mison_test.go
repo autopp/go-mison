@@ -590,27 +590,27 @@ func TestParserState(t *testing.T) {
 		{
 			json:          []byte(`{"b":2,"c":-3,"a":1}`),
 			queriedFields: []string{"a", "c"},
-			expected:      []*KeyValue{{1, -3.0, "-3", JSONNumber, nil}, {0, 1.0, "1", JSONNumber, nil}},
+			expected:      []*KeyValue{{1, -3.0, "-3", JSONNumber}, {0, 1.0, "1", JSONNumber}},
 		},
 		{
 			json:          []byte(`{"a":1.0,"b":{"c":2}}`),
 			queriedFields: []string{"a", "b.c"},
-			expected:      []*KeyValue{{0, 1.0, "1.0", JSONNumber, nil}, {1, 2.0, "2", JSONNumber, nil}},
+			expected:      []*KeyValue{{0, 1.0, "1.0", JSONNumber}, {1, 2.0, "2", JSONNumber}},
 		},
 		{
 			json:          []byte(`{"a":true,"b":false,"c":null}`),
 			queriedFields: []string{"a", "b", "c"},
-			expected:      []*KeyValue{{0, true, "true", JSONBool, nil}, {1, false, "false", JSONBool, nil}, {2, nil, "null", JSONNull, nil}},
+			expected:      []*KeyValue{{0, true, "true", JSONBool}, {1, false, "false", JSONBool}, {2, nil, "null", JSONNull}},
 		},
 		{
 			json:          []byte(`{"a":"foo","b":"bar\"\\\n\\n"}`),
 			queriedFields: []string{"a", "b"},
-			expected:      []*KeyValue{{0, "foo", `"foo"`, JSONString, nil}, {1, "bar\"\\\n\\n", `"bar\"\\\n\\n"`, JSONString, nil}},
+			expected:      []*KeyValue{{0, "foo", `"foo"`, JSONString}, {1, "bar\"\\\n\\n", `"bar\"\\\n\\n"`, JSONString}},
 		},
 		{
 			json:          []byte(`{"a":"\b\f\t\r"}`),
 			queriedFields: []string{"a"},
-			expected:      []*KeyValue{{0, "\b\f\t\r", `"\b\f\t\r"`, JSONString, nil}},
+			expected:      []*KeyValue{{0, "\b\f\t\r", `"\b\f\t\r"`, JSONString}},
 		},
 		{
 			json:          []byte(`{"a":0,"b":1}`),

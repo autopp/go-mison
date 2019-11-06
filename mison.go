@@ -465,7 +465,6 @@ type KeyValue struct {
 	Value    interface{}
 	RawValue string
 	Type     JSONType
-	Err      error
 }
 
 var errUnexpectedObject = errors.New("unexpected object")
