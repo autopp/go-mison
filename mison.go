@@ -662,3 +662,11 @@ func (ps *ParserState) Next() (*KeyValue, error) {
 
 	return ps.Next()
 }
+
+func (ps *ParserState) NextRecord() {
+	flame := &ps.stack[ps.sp]
+	if flame.colons == nil {
+		flame.colons = generateColonPositions(ps.index.leveledColonBitmaps, flame.start, flame.end, flame.level)
+	}
+	flame.currentColon = len(flame.colons)
+}
