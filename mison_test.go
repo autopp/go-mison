@@ -645,3 +645,28 @@ func TestParserState(t *testing.T) {
 		})
 	}
 }
+
+func TestParserNextRecord(t *testing.T) {
+	json := []byte(`{"a":0,"b":{"c":1,"d":2,"e":3},"f":4}`)
+	queriedField := []string{"a", "b.c", "b.e", "f"}
+	expected := []*KeyValue{
+		{0, 0.0, "0", JSONNumber},
+		{1, 1.0, "1", JSONNumber},
+		{3, 3.0, "3", JSONNumber},
+	}
+
+	p, err := NewParser(queriedField)
+	if assert.NoError(t, err) {
+		ps, err := p.StartParse(json)
+		if assert.NoError(t, err) {
+			a, _ := ps.Next()
+			bc, _ := ps.Next()
+			ps.NextRecord()
+			f, _ := ps.Next()
+			_, err := ps.Next()
+			if assert.Equal(t, io.EOF, err) {
+				assert.Equal(t, expected, []*KeyValue{a, bc, f})
+			}
+		}
+	}
+}
