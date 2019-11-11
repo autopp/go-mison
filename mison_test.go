@@ -659,11 +659,20 @@ func TestParserNextRecord(t *testing.T) {
 	if assert.NoError(t, err) {
 		ps, err := p.StartParse(json)
 		if assert.NoError(t, err) {
-			a, _ := ps.Next()
-			bc, _ := ps.Next()
+			a, err := ps.Next()
+			if !assert.NoError(t, err) {
+				t.FailNow()
+			}
+			bc, err := ps.Next()
+			if !assert.NoError(t, err) {
+				t.FailNow()
+			}
 			ps.NextRecord()
-			f, _ := ps.Next()
-			_, err := ps.Next()
+			f, err := ps.Next()
+			if !assert.NoError(t, err) {
+				t.FailNow()
+			}
+			_, err = ps.Next()
 			if assert.Equal(t, io.EOF, err) {
 				assert.Equal(t, expected, []*KeyValue{a, bc, f})
 			}
