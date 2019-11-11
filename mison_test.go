@@ -652,7 +652,7 @@ func TestParserNextRecord(t *testing.T) {
 	expected := []*KeyValue{
 		{0, 0.0, "0", JSONNumber},
 		{1, 1.0, "1", JSONNumber},
-		{3, 3.0, "3", JSONNumber},
+		{3, 4.0, "4", JSONNumber},
 	}
 
 	p, err := NewParser(queriedField)
