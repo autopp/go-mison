@@ -699,7 +699,10 @@ func TestParserNextRecord(t *testing.T) {
 							}
 							actual = append(actual, kv)
 						case nextRecord:
-							ps.NextRecord()
+							err := ps.NextRecord()
+							if !assert.NoError(t, err) {
+								t.FailNow()
+							}
 						}
 					}
 					_, err := ps.Next()
