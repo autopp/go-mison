@@ -663,6 +663,7 @@ func (ps *ParserState) Next() (*KeyValue, error) {
 	return ps.Next()
 }
 
+// NextRecord skips current record
 func (ps *ParserState) NextRecord() {
 	flame := &ps.stack[ps.sp]
 	if flame.colons == nil {
