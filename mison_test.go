@@ -647,35 +647,67 @@ func TestParserState(t *testing.T) {
 }
 
 func TestParserNextRecord(t *testing.T) {
-	json := []byte(`{"a":0,"b":{"c":1,"d":2,"e":3},"f":4}`)
-	queriedField := []string{"a", "b.c", "b.e", "f"}
-	expected := []*KeyValue{
-		{0, 0.0, "0", JSONNumber},
-		{1, 1.0, "1", JSONNumber},
-		{3, 4.0, "4", JSONNumber},
+	type op int
+	const (
+		next op = iota
+		nextRecord
+	)
+
+	cases := []struct {
+		json          []byte
+		queriedFields []string
+		ops           []op
+		expected      []*KeyValue
+	}{
+		{
+			json:          []byte(`{"a":0,"b":{"c":1,"d":2,"e":3},"f":4}`),
+			queriedFields: []string{"a", "b.c", "b.e", "f"},
+			ops:           []op{next, next, nextRecord, next},
+			expected: []*KeyValue{
+				{0, 0.0, "0", JSONNumber},
+				{1, 1.0, "1", JSONNumber},
+				{3, 4.0, "4", JSONNumber},
+			},
+		},
+		{
+			json:          []byte(`{"a":0,"b":{"c":1,"d":2,"e":3},"f":4}`),
+			queriedFields: []string{"a", "b.c", "b.e", "f"},
+			ops:           []op{next, nextRecord, nextRecord},
+			expected: []*KeyValue{
+				{0, 0.0, "0", JSONNumber},
+			},
+		},
+		{
+			json:          []byte(`{"a":0,"b":{"c":1,"d":2,"e":3},"f":4}`),
+			queriedFields: []string{"a", "b.c", "b.e", "f"},
+			ops:           []op{nextRecord},
+			expected:      []*KeyValue{},
+		},
 	}
 
-	p, err := NewParser(queriedField)
-	if assert.NoError(t, err) {
-		ps, err := p.StartParse(json)
-		if assert.NoError(t, err) {
-			a, err := ps.Next()
-			if !assert.NoError(t, err) {
-				t.FailNow()
+	for i, tt := range cases {
+		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
+			if p, err := NewParser(tt.queriedFields); assert.NoError(t, err) {
+				if ps, err := p.StartParse(tt.json); assert.NoError(t, err) {
+					actual := make([]*KeyValue, 0, len(tt.expected))
+					for _, op := range tt.ops {
+						switch op {
+						case next:
+							kv, err := ps.Next()
+							if !assert.NoError(t, err) {
+								t.FailNow()
+							}
+							actual = append(actual, kv)
+						case nextRecord:
+							ps.NextRecord()
+						}
+					}
+					_, err := ps.Next()
+					if assert.Equal(t, io.EOF, err) {
+						assert.Equal(t, tt.expected, actual)
+					}
+				}
 			}
-			bc, err := ps.Next()
-			if !assert.NoError(t, err) {
-				t.FailNow()
-			}
-			ps.NextRecord()
-			f, err := ps.Next()
-			if !assert.NoError(t, err) {
-				t.FailNow()
-			}
-			_, err = ps.Next()
-			if assert.Equal(t, io.EOF, err) {
-				assert.Equal(t, expected, []*KeyValue{a, bc, f})
-			}
-		}
+		})
 	}
 }
