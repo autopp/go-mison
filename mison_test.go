@@ -713,4 +713,19 @@ func TestParserNextRecord(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("case error", func(t *testing.T) {
+		json := []byte(`{"a":0}`)
+		queriedFields := []string{"a"}
+		if p, err := NewParser(queriedFields); assert.NoError(t, err) {
+			if ps, err := p.StartParse(json); assert.NoError(t, err) {
+				if err = ps.NextRecord(); assert.NoError(t, err) {
+					if _, err := ps.Next(); assert.Equal(t, io.EOF, err) {
+						err = ps.NextRecord()
+						assert.Error(t, err)
+					}
+				}
+			}
+		}
+	})
 }
