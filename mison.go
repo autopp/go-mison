@@ -457,6 +457,8 @@ const (
 	JSONNumber
 	// JSONString represents string value in JSON
 	JSONString
+	// JSONEndOfRecord represents end of record
+	JSONEndOfRecord
 )
 
 // KeyValue represents found key-value in JSON
