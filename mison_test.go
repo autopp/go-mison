@@ -2,7 +2,6 @@ package mison
 
 import (
 	"fmt"
-	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -633,9 +632,10 @@ func TestParserState(t *testing.T) {
 					actual := make([]*KeyValue, 0)
 					for {
 						kv, err := ps.Next()
-						if err == io.EOF {
-							break
-						} else if assert.NoError(t, err) {
+						if assert.NoError(t, err) {
+							if kv.Type == JSONEndOfRecord {
+								break
+							}
 							actual = append(actual, kv)
 						}
 					}
@@ -705,8 +705,8 @@ func TestParserNextRecord(t *testing.T) {
 							}
 						}
 					}
-					_, err := ps.Next()
-					if assert.Equal(t, io.EOF, err) {
+					kv, err := ps.Next()
+					if assert.NoError(t, err) && assert.Equal(t, JSONEndOfRecord, kv.Type) {
 						assert.Equal(t, tt.expected, actual)
 					}
 				}
@@ -720,7 +720,7 @@ func TestParserNextRecord(t *testing.T) {
 		if p, err := NewParser(queriedFields); assert.NoError(t, err) {
 			if ps, err := p.StartParse(json); assert.NoError(t, err) {
 				if err = ps.NextRecord(); assert.NoError(t, err) {
-					if _, err := ps.Next(); assert.Equal(t, io.EOF, err) {
+					if kv, err := ps.Next(); assert.NoError(t, err) && assert.Equal(t, JSONEndOfRecord, kv.Type) {
 						err = ps.NextRecord()
 						assert.Error(t, err)
 					}

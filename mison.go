@@ -3,7 +3,6 @@ package mison
 import (
 	"errors"
 	"fmt"
-	"io"
 	"math"
 	"math/bits"
 	"regexp"
@@ -619,7 +618,7 @@ func (ps *ParserState) Next() (*KeyValue, error) {
 		flame.colons = nil
 		ps.sp--
 		if ps.sp < 0 {
-			return nil, io.EOF
+			return &KeyValue{FieldID: -1, Type: JSONEndOfRecord, Value: nil, RawValue: ""}, nil
 		}
 		return ps.Next()
 	}
