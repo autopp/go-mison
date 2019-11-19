@@ -633,7 +633,7 @@ func TestParserState(t *testing.T) {
 					for {
 						kv, err := ps.Next()
 						if assert.NoError(t, err) {
-							if kv.Type == JSONEndOfRecord {
+							if kv.IsEndOfRecord() {
 								break
 							}
 							actual = append(actual, kv)
@@ -706,7 +706,7 @@ func TestParserNextRecord(t *testing.T) {
 						}
 					}
 					kv, err := ps.Next()
-					if assert.NoError(t, err) && assert.Equal(t, JSONEndOfRecord, kv.Type) {
+					if assert.NoError(t, err) && assert.True(t, kv.IsEndOfRecord()) {
 						assert.Equal(t, tt.expected, actual)
 					}
 				}
@@ -720,7 +720,7 @@ func TestParserNextRecord(t *testing.T) {
 		if p, err := NewParser(queriedFields); assert.NoError(t, err) {
 			if ps, err := p.StartParse(json); assert.NoError(t, err) {
 				if err = ps.NextRecord(); assert.NoError(t, err) {
-					if kv, err := ps.Next(); assert.NoError(t, err) && assert.Equal(t, JSONEndOfRecord, kv.Type) {
+					if kv, err := ps.Next(); assert.NoError(t, err) && assert.True(t, kv.IsEndOfRecord()) {
 						err = ps.NextRecord()
 						assert.Error(t, err)
 					}

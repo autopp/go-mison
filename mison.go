@@ -468,6 +468,11 @@ type KeyValue struct {
 	Type     JSONType
 }
 
+// IsEndOfRecord check end of record
+func (kv *KeyValue) IsEndOfRecord() bool {
+	return kv.Type == JSONEndOfRecord
+}
+
 var errUnexpectedObject = errors.New("unexpected object")
 var errUnexpectedArray = errors.New("unexpected array")
 
