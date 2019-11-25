@@ -668,17 +668,3 @@ func (ps *ParserState) Next() (*KeyValue, error) {
 
 	return ps.Next()
 }
-
-// NextRecord skips current record
-func (ps *ParserState) NextRecord() error {
-	if ps.sp < 0 {
-		return errors.New("already finished")
-	}
-	flame := &ps.stack[ps.sp]
-	if flame.colons == nil {
-		flame.colons = generateColonPositions(ps.index.leveledColonBitmaps, flame.start, flame.end, flame.level)
-	}
-	flame.currentColon = len(flame.colons)
-
-	return nil
-}
