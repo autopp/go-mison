@@ -59,6 +59,9 @@ type structualCharacterBitmaps struct {
 	colons      []uint32
 	lBraces     []uint32
 	rBraces     []uint32
+	lBrackets   []uint32
+	rBrackets   []uint32
+	commas      []uint32
 }
 
 /*
