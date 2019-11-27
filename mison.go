@@ -59,9 +59,9 @@ type structualCharacterBitmaps struct {
 	colons      []uint32
 	lBraces     []uint32
 	rBraces     []uint32
+	commas      []uint32
 	lBrackets   []uint32
 	rBrackets   []uint32
-	commas      []uint32
 }
 
 /*
@@ -70,10 +70,13 @@ buildStructualCharacterBitmaps builda structual character bitmaps.
 See section 4.2.1 (currently, SIMD is not used).
 */
 func buildStructualCharacterBitmaps(json []byte) *structualCharacterBitmaps {
-	indices := map[byte]int{'\\': 0, '"': 1, ':': 2, '{': 3, '}': 4}
+	indices := map[byte]int{'\\': 0, '"': 1, ':': 2, '{': 3, '}': 4, ',': 5, '[': 6, ']': 7}
 	jsonLen := len(json)
 	bitmapLen := (jsonLen-1)/32 + 1
 	bitmaps := [][]uint32{
+		make([]uint32, bitmapLen),
+		make([]uint32, bitmapLen),
+		make([]uint32, bitmapLen),
 		make([]uint32, bitmapLen),
 		make([]uint32, bitmapLen),
 		make([]uint32, bitmapLen),
@@ -108,6 +111,9 @@ func buildStructualCharacterBitmaps(json []byte) *structualCharacterBitmaps {
 		colons:      bitmaps[indices[':']],
 		lBraces:     bitmaps[indices['{']],
 		rBraces:     bitmaps[indices['}']],
+		commas:      bitmaps[indices[',']],
+		lBrackets:   bitmaps[indices['[']],
+		rBrackets:   bitmaps[indices[']']],
 	}
 }
 

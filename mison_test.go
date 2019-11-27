@@ -98,9 +98,9 @@ func TestBuildStructualCharacterBitmaps(t *testing.T) {
 		colonBits     []string
 		lBraceBits    []string
 		rBraceBits    []string
+		commaBits     []string
 		lBracketBits  []string
 		rBracketBits  []string
-		commaBits     []string
 	}{
 		{
 			text:          `{"id":"id:\"a\"","reviews":50,"a`,
@@ -109,9 +109,9 @@ func TestBuildStructualCharacterBitmaps(t *testing.T) {
 			colonBits:     []string{"00000100000000000000001000100000"},
 			lBraceBits:    []string{"00000000000000000000000000000001"},
 			rBraceBits:    []string{"00000000000000000000000000000000"},
+			commaBits:     []string{"00100000000000010000000000000000"},
 			lBracketBits:  []string{"00000000000000000000000000000000"},
 			rBracketBits:  []string{"00000000000000000000000000000000"},
-			commaBits:     []string{"00000000000000000000000000000000"},
 		},
 		{
 			text: `      {"id":"id:\"a\"","reviews"` +
@@ -136,15 +136,15 @@ func TestBuildStructualCharacterBitmaps(t *testing.T) {
 				"00000000000000000000000000000000",
 				"00000000000000000000000000000000",
 			},
+			commaBits: []string{
+				"00000000010000000000000000000000",
+				"00000000000000000000000000001000",
+			},
 			lBracketBits: []string{
 				"00000000000000000000000000000000",
 				"00000000000000000000000000000000",
 			},
 			rBracketBits: []string{
-				"00000000000000000000000000000000",
-				"00000000000000000000000000000000",
-			},
-			commaBits: []string{
 				"00000000000000000000000000000000",
 				"00000000000000000000000000000000",
 			},
@@ -160,9 +160,9 @@ func TestBuildStructualCharacterBitmaps(t *testing.T) {
 				colons:      bitsToUint32(tt.colonBits...),
 				lBraces:     bitsToUint32(tt.lBraceBits...),
 				rBraces:     bitsToUint32(tt.rBraceBits...),
+				commas:      bitsToUint32(tt.commaBits...),
 				lBrackets:   bitsToUint32(tt.lBracketBits...),
 				rBrackets:   bitsToUint32(tt.rBracketBits...),
-				commas:      bitsToUint32(tt.commaBits...),
 			}
 
 			actual := buildStructualCharacterBitmaps([]byte(tt.text))
