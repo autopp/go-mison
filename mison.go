@@ -648,7 +648,7 @@ func (ps *ParserState) Next() (*KeyValue, error) {
 			// field is atomic value
 			// parse value
 			v, rv, t, err := parseLiteral(ps.index.json, colon)
-			if err == errUnexpectedObject || err == errUnexpectedArray {
+			if errors.Is(err, errUnexpectedObject) || errors.Is(err, errUnexpectedArray) {
 				// skip
 			} else if err != nil {
 				return nil, err
