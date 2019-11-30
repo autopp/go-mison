@@ -378,9 +378,19 @@ func retrieveFieldName(json []byte, stringMaskBitmap []uint32, colon int) (strin
 
 type queriedFieldTable map[string]*queriedFieldEntry
 
+const (
+	queriedFieldObject = -1
+	queriedFieldArray  = -2
+)
+
 type queriedFieldEntry struct {
 	id       int
 	children queriedFieldTable
+	element  *queriedFieldEntry
+}
+
+func (f *queriedFieldEntry) isAtomic() bool {
+	return f.id != queriedFieldObject && f.id != queriedFieldArray
 }
 
 func findStructualDot(queriedField string) int {
@@ -411,7 +421,7 @@ func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField, fu
 		child := queriedField[dot+1:]
 
 		if _, ok := t[parent]; !ok {
-			t[parent] = &queriedFieldEntry{children: make(queriedFieldTable)}
+			t[parent] = &queriedFieldEntry{id: queriedFieldObject, children: make(queriedFieldTable)}
 		} else if t[parent].children == nil {
 			return -1, fmt.Errorf("duplicated field %q", fullField)
 		}
@@ -644,7 +654,7 @@ func (ps *ParserState) Next() (*KeyValue, error) {
 	}
 
 	if entry, ok := flame.table[name]; ok {
-		if entry.children == nil {
+		if entry.isAtomic() {
 			// field is atomic value
 			// parse value
 			v, rv, t, err := parseLiteral(ps.index.json, colon)
