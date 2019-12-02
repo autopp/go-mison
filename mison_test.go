@@ -570,6 +570,29 @@ func TestBuildQueriedFieldTable(t *testing.T) {
 			},
 			level: 2,
 		},
+		{
+			queriedFields: []string{"abc[]"},
+			table:         queriedFieldTable{"abc": &queriedFieldEntry{id: queriedFieldArray, element: &queriedFieldEntry{id: 0}}},
+			level:         1,
+		},
+		{
+			queriedFields: []string{"abc[][]"},
+			table: queriedFieldTable{"abc": &queriedFieldEntry{
+				id: queriedFieldArray, element: &queriedFieldEntry{id: queriedFieldArray, element: &queriedFieldEntry{id: 0}}},
+			},
+			level: 1,
+		},
+		{
+			queriedFields: []string{"abc[].def"},
+			table: queriedFieldTable{
+				"abc": &queriedFieldEntry{
+					id: queriedFieldArray, element: &queriedFieldEntry{
+						id: queriedFieldObject, children: queriedFieldTable{"def": &queriedFieldEntry{id: 0}},
+					},
+				},
+			},
+			level: 1,
+		},
 	}
 
 	for i, tt := range cases {
