@@ -422,7 +422,7 @@ func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField, fu
 
 		if _, ok := t[parent]; !ok {
 			t[parent] = &queriedFieldEntry{id: queriedFieldObject, children: make(queriedFieldTable)}
-		} else if t[parent].children == nil {
+		} else if t[parent].isAtomic() {
 			return -1, fmt.Errorf("duplicated field %q", fullField)
 		}
 		l, err := buildQueriedFieldTableFromSingleField(t[parent].children, child, fullField, nextID, level+1)
