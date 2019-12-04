@@ -7,6 +7,7 @@ import (
 	"math/bits"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 type structualIndex struct {
@@ -442,12 +443,43 @@ func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField, fu
 	return maxLevel, nil
 }
 
+func parseQueriedField(t queriedFieldTable, queriedField, fullField string, nextID int, level int) (int, error) {
+	// Extract field
+	r := regexp.MustCompile(`^[^][.]+`)
+	loc := r.FindStringIndex(queriedField)
+	if loc == nil {
+		return -1, errors.New("expected field name, but not found")
+	}
+
+	name := queriedField[loc[0]:loc[1]]
+	rest := queriedField[loc[1]:]
+
+	if rest == "" {
+		if _, ok := t[name]; ok {
+			return -1, fmt.Errorf("duplicated field %q", fullField)
+		}
+		t[name] = &queriedFieldEntry{id: nextID}
+		return level, nil
+	} else if strings.HasPrefix(rest, ".") {
+		parent, ok := t[name]
+		if !ok {
+			parent = &queriedFieldEntry{id: queriedFieldObject, children: make(queriedFieldTable)}
+			t[name] = parent
+		} else if parent.isAtomic() {
+			return -1, fmt.Errorf("duplicated field %q", fullField)
+		}
+		return parseQueriedField(parent.children, rest[1:], fullField, nextID, level+1)
+	} else {
+		return -1, errors.New("not implemented")
+	}
+}
+
 func buildQueriedFieldTable(queriedFields []string) (queriedFieldTable, int, error) {
 	t := make(queriedFieldTable)
 	level := 0
 
 	for i, field := range queriedFields {
-		l, err := buildQueriedFieldTableFromSingleField(t, field, field, i, 1)
+		l, err := parseQueriedField(t, field, field, i, 1)
 		if err != nil {
 			return nil, -1, err
 		}
