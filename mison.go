@@ -445,13 +445,14 @@ func buildQueriedFieldTableFromSingleField(t queriedFieldTable, queriedField, fu
 
 func parseQueriedField(t queriedFieldTable, queriedField, fullField string, nextID int, level int) (int, error) {
 	// Extract field
-	r := regexp.MustCompile(`^[^][.]+`)
-	loc := r.FindStringIndex(queriedField)
+	namePattern := regexp.MustCompile(`^([^][.\\]|\\.)+`)
+	loc := namePattern.FindStringIndex(queriedField)
 	if loc == nil {
 		return -1, errors.New("expected field name, but not found")
 	}
 
-	name := queriedField[loc[0]:loc[1]]
+	excapePattern := regexp.MustCompile(`\\(.)`)
+	name := excapePattern.ReplaceAllString(queriedField[loc[0]:loc[1]], `$1`)
 	rest := queriedField[loc[1]:]
 
 	if rest == "" {
