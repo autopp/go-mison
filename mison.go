@@ -385,13 +385,22 @@ const (
 )
 
 type queriedFieldEntry struct {
-	id       int
-	children queriedFieldTable
-	element  *queriedFieldEntry
+	id        int
+	isElement bool
+	children  queriedFieldTable
+	element   *queriedFieldEntry
+}
+
+func (f *queriedFieldEntry) isObject() bool {
+	return f.id == queriedFieldObject
+}
+
+func (f *queriedFieldEntry) isArray() bool {
+	return f.id == queriedFieldArray
 }
 
 func (f *queriedFieldEntry) isAtomic() bool {
-	return f.id != queriedFieldObject && f.id != queriedFieldArray
+	return !f.isObject() && !f.isArray()
 }
 
 func findStructualDot(queriedField string) int {
@@ -466,12 +475,47 @@ func parseQueriedField(t queriedFieldTable, queriedField, fullField string, next
 		if !ok {
 			parent = &queriedFieldEntry{id: queriedFieldObject, children: make(queriedFieldTable)}
 			t[name] = parent
-		} else if parent.isAtomic() {
+		} else if !parent.isObject() {
 			return -1, fmt.Errorf("duplicated field %q", fullField)
 		}
 		return parseQueriedField(parent.children, rest[1:], fullField, nextID, level+1)
+	} else if strings.HasPrefix(rest, "[]") {
+		parent, ok := t[name]
+		if !ok {
+			parent = &queriedFieldEntry{id: queriedFieldArray}
+			t[name] = parent
+		} else if !parent.isArray() {
+			return -1, fmt.Errorf("duplicated field %q", fullField)
+		}
+		return parseQueriedArray(parent, rest[2:], fullField, nextID, level+1)
 	} else {
-		return -1, errors.New("not implemented")
+		return -1, fmt.Errorf("cannot parse queried field %q", fullField)
+	}
+}
+
+func parseQueriedArray(array *queriedFieldEntry, queriedField, fullField string, nextID int, level int) (int, error) {
+	if queriedField == "" {
+		if array.element != nil {
+			return -1, fmt.Errorf("duplicated field %q", fullField)
+		}
+		array.element = &queriedFieldEntry{id: nextID, isElement: true}
+		return level, nil
+	} else if strings.HasPrefix(queriedField, ".") {
+		if array.element == nil {
+			array.element = &queriedFieldEntry{id: queriedFieldObject, children: make(queriedFieldTable)}
+		} else if !array.element.isObject() {
+			return -1, fmt.Errorf("duplicated field %q", fullField)
+		}
+		return parseQueriedField(array.element.children, queriedField[1:], fullField, nextID, level+1)
+	} else if strings.HasPrefix(queriedField, "[]") {
+		if array.element == nil {
+			array.element = &queriedFieldEntry{id: queriedFieldArray}
+		} else if !array.element.isArray() {
+			return -1, fmt.Errorf("duplicated field %q", fullField)
+		}
+		return parseQueriedArray(array.element, queriedField[2:], fullField, nextID, level+1)
+	} else {
+		return -1, fmt.Errorf("cannot parse queried field %q", fullField)
 	}
 }
 

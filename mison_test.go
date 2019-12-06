@@ -572,15 +572,15 @@ func TestBuildQueriedFieldTable(t *testing.T) {
 		},
 		{
 			queriedFields: []string{"abc[]"},
-			table:         queriedFieldTable{"abc": &queriedFieldEntry{id: queriedFieldArray, element: &queriedFieldEntry{id: 0}}},
-			level:         1,
+			table:         queriedFieldTable{"abc": &queriedFieldEntry{id: queriedFieldArray, element: &queriedFieldEntry{id: 0, isElement: true}}},
+			level:         2,
 		},
 		{
 			queriedFields: []string{"abc[][]"},
 			table: queriedFieldTable{"abc": &queriedFieldEntry{
-				id: queriedFieldArray, element: &queriedFieldEntry{id: queriedFieldArray, element: &queriedFieldEntry{id: 0}}},
+				id: queriedFieldArray, element: &queriedFieldEntry{id: queriedFieldArray, element: &queriedFieldEntry{id: 0, isElement: true}}},
 			},
-			level: 1,
+			level: 3,
 		},
 		{
 			queriedFields: []string{"abc[].def"},
@@ -591,12 +591,12 @@ func TestBuildQueriedFieldTable(t *testing.T) {
 					},
 				},
 			},
-			level: 1,
+			level: 3,
 		},
 	}
 
 	for i, tt := range cases {
-		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
+		t.Run(fmt.Sprintf("case%d: %q", i, tt.queriedFields), func(t *testing.T) {
 			table, level, err := buildQueriedFieldTable(tt.queriedFields)
 			if assert.NoError(t, err) {
 				assert.Equal(t, tt.table, table)
