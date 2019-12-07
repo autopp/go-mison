@@ -576,6 +576,11 @@ func TestBuildQueriedFieldTable(t *testing.T) {
 			level:         2,
 		},
 		{
+			queriedFields: []string{`abc\[\][]`},
+			table:         queriedFieldTable{"abc[]": &queriedFieldEntry{id: queriedFieldArray, element: &queriedFieldEntry{id: 0, isElement: true}}},
+			level:         2,
+		},
+		{
 			queriedFields: []string{"abc[][]"},
 			table: queriedFieldTable{"abc": &queriedFieldEntry{
 				id: queriedFieldArray, element: &queriedFieldEntry{id: queriedFieldArray, element: &queriedFieldEntry{id: 0, isElement: true}}},
