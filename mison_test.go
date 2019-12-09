@@ -237,7 +237,7 @@ func TestBuildStructualQuoteBitmap(t *testing.T) {
 	}
 
 	for i, tt := range cases {
-		t.Run(fmt.Sprintf("case%d", i+1), func(t *testing.T) {
+		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
 			actual := buildStructualQuoteBitmap(tt.bitmaps)
 			assert.Equalf(t, tt.expected, actual, "expected: %s, actual: %s", uint32SliceToBits(tt.expected), uint32SliceToBits(actual))
 		})
@@ -266,7 +266,7 @@ func TestBuildStringMaskBitmap(t *testing.T) {
 	}
 
 	for i, tt := range cases {
-		t.Run(fmt.Sprintf("case%d", i+1), func(t *testing.T) {
+		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
 			actual := buildStringMaskBitmap(tt.quoteBitmap)
 			assert.Equalf(t, tt.expected, actual, "expected: %s, actual: %s", uint32SliceToBits(tt.expected), uint32SliceToBits(actual))
 		})
@@ -355,7 +355,7 @@ func TestBuildLeveledColonBitmaps(t *testing.T) {
 	}
 
 	for i, tt := range cases {
-		t.Run(fmt.Sprintf("case%d", i+1), func(t *testing.T) {
+		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
 			actual, err := buildLeveledColonBitmaps(tt.bitmaps, tt.stringMask, tt.level)
 			if assert.NoError(t, err) {
 				assert.Equal(t, tt.expected, actual)
@@ -399,7 +399,7 @@ func TestGenerateColonPositions(t *testing.T) {
 	}
 
 	for i, tt := range cases {
-		t.Run(fmt.Sprintf("case%d", i+i), func(t *testing.T) {
+		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
 			actual := generateColonPositions(tt.index, tt.start, tt.end, tt.level)
 			assert.Equal(t, tt.expected, actual)
 		})
@@ -455,7 +455,7 @@ func TestBuildStructualIndex(t *testing.T) {
 	}
 
 	for i, tt := range cases {
-		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
+		t.Run(fmt.Sprintf("case%d: %s", i, tt.input), func(t *testing.T) {
 			actual, err := buildStructualIndex([]byte(tt.input), tt.level)
 			if assert.NoError(t, err) {
 				expected := &structualIndex{
@@ -529,7 +529,7 @@ func TestRetrieveFieldName(t *testing.T) {
 	}
 
 	for i, tt := range cases {
-		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
+		t.Run(fmt.Sprintf("case%d: %s(%d)", i, tt.json, tt.colon), func(t *testing.T) {
 			actual, err := retrieveFieldName(tt.json, tt.stringMaskBitmap, tt.colon)
 			if assert.NoError(t, err) {
 				assert.Equalf(t, tt.expected, actual, "expected: %q, actual: %q", tt.expected, actual)
@@ -622,7 +622,7 @@ func TestBuildQueriedFieldTable(t *testing.T) {
 	}
 
 	for i, tt := range errCases {
-		t.Run(fmt.Sprintf("case%d", i), func(t *testing.T) {
+		t.Run(fmt.Sprintf("case%d: %q", i, tt.queriedFields), func(t *testing.T) {
 			_, _, err := buildQueriedFieldTable(tt.queriedFields)
 			assert.Error(t, err)
 		})
