@@ -756,6 +756,7 @@ func (ps *ParserState) Next() (*KeyValue, error) {
 			newFlame.start = colon + 1
 			newFlame.end = innerEnd
 			newFlame.level = flame.level + 1
+			newFlame.colons = nil
 			newFlame.table = entry.children
 
 			return ps.Next()
