@@ -336,7 +336,7 @@ func buildStructualIndex(json []byte, level int) (*structualIndex, error) {
 
 func retrieveFieldName(json []byte, stringMaskBitmap []uint32, colon int) (string, error) {
 	// find ending quote
-	i := colon / 32
+	i := (colon - 1) / 32
 	mask := stringMaskBitmap[i] & (uint32(1)<<uint32(colon) - 1)
 	if mask == uint32(0) {
 		for i--; i >= 0 && stringMaskBitmap[i] == 0; i-- {
